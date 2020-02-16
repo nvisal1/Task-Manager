@@ -1,5 +1,8 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
+using TaskManager.CustomSettings;
+using TaskManager.Data;
 using TaskManager.DataTransferObjects;
 
 namespace TaskManager.Controllers
@@ -8,6 +11,15 @@ namespace TaskManager.Controllers
     [Route("tasks")]
     public class TaskController : ControllerBase
     {
+        private readonly AppDbContext _context;
+        private readonly TaskLimits _taskLimits;
+
+        public TaskController(AppDbContext context, IOptions<TaskLimits> taskLimits)
+        {
+            this._context = context;
+            this._taskLimits = taskLimits.Value;
+        }
+
         [HttpPost]
         [Produces("application/json")]
         [ProducesResponseType(typeof(TaskResponse), StatusCodes.Status201Created)]
@@ -15,9 +27,9 @@ namespace TaskManager.Controllers
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
         [ProducesErrorResponseType(typeof(ErrorResponse))]
-        public ActionResult<TaskResponse> createTask([FromBody] TaskWriteRequestPayload taskWriteRequestPayload)
+        public ActionResult<TaskResponse> CreateTask([FromBody] TaskWriteRequestPayload taskWriteRequestPayload)
         {
-
+            return NotFound();
         }
 
         [HttpPatch("{id}")]
@@ -27,9 +39,9 @@ namespace TaskManager.Controllers
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
         [ProducesErrorResponseType(typeof(ErrorResponse))]
-        public ActionResult updateTask([FromRoute] int id [FromBody] TaskWriteRequestPayload taskWriteRequestPayload)
+        public ActionResult UpdateTask([FromRoute] int id, [FromBody] TaskWriteRequestPayload taskWriteRequestPayload)
         {
-
+            return NotFound();
         }
 
         [HttpDelete("{id}")]
@@ -37,9 +49,9 @@ namespace TaskManager.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
         [ProducesErrorResponseType(typeof(ErrorResponse))]
-        public ActionResult deleteTask([FromRoute] int id)
+        public ActionResult DeleteTask([FromRoute] int id)
         {
-
+            return NotFound();
         }
 
         [HttpGet("{id}")]
@@ -47,9 +59,9 @@ namespace TaskManager.Controllers
         [ProducesResponseType(typeof(TaskResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
         [ProducesErrorResponseType(typeof(ErrorResponse))]
-        public ActionResult<TaskResponse> getTask([FromRoute] int id)
+        public ActionResult<TaskResponse> GetTask([FromRoute] int id)
         {
-
+            return NotFound();
         }
 
         [HttpGet]
@@ -57,9 +69,9 @@ namespace TaskManager.Controllers
         [ProducesResponseType(typeof(TaskResponse[]), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
         [ProducesErrorResponseType(typeof(ErrorResponse))]
-        public ActionResult<TaskResponse[]> getAllTasks()
+        public ActionResult<TaskResponse[]> GetAllTasks()
         {
-
+            return NotFound();
         }
 
     }

@@ -2,9 +2,12 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using TaskManager.CustomSettings;
+using TaskManager.Data;
 
 namespace TaskManager
 {
@@ -22,6 +25,11 @@ namespace TaskManager
         {
 
             services.AddControllersWithViews();
+
+            services.AddDbContext<AppDbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+
+            services.AddOptions();
+            services.Configure<TaskLimits>(Configuration.GetSection(nameof(TaskLimits)));
 
             // In production, the React files will be served from this directory
             services.AddSpaStaticFiles(configuration =>

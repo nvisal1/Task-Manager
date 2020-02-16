@@ -14,10 +14,10 @@ namespace TaskManager.Data
 
             Task[] tasks = new Task[]
             {
-                new Task() { Id = 1, Name = "Buy Groceries", IsCompleted = false, DueDate = "2020-02-03" },
-                new Task() { Id = 2, Name = "Workout", IsCompleted = true, DueDate = "2020-01-01" },
-                new Task() { Id = 3, Name = "Paint fence", IsCompleted = false, DueDate = "2020-03-15" },
-                new Task() { Id = 4, Name = "Mow Lawn", IsCompleted = false, DueDate = "2020-06-11" }
+                new Task() { Name = "Buy Groceries", IsCompleted = false, DueDate = "2020-02-03" },
+                new Task() { Name = "Workout", IsCompleted = true, DueDate = "2020-01-01" },
+                new Task() { Name = "Paint fence", IsCompleted = false, DueDate = "2020-03-15" },
+                new Task() { Name = "Mow Lawn", IsCompleted = false, DueDate = "2020-06-11" }
             };
 
             foreach (Task task in tasks)

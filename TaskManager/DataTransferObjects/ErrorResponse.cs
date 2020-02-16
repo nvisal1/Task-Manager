@@ -10,7 +10,7 @@ namespace TaskManager.DataTransferObjects
         /// <summary>
         /// Numeric error that represents the issue
         /// </summary>
-        public int errorNumber { get; set; }
+        public int ErrorNumber { get; set; }
 
         /// <summary>
         /// The name of the parameter that has the issue
@@ -18,7 +18,7 @@ namespace TaskManager.DataTransferObjects
         /// If the error is not tied to a specified parameter,
         /// then this value can be null
         /// </summary>
-        public string parameterName { get; set; }
+        public string ParameterName { get; set; }
 
         /// <summary>
         /// The value of the parameter that caused the error
@@ -26,12 +26,12 @@ namespace TaskManager.DataTransferObjects
         /// If the error is not tied to a specific parameter,
         /// then this value can be null
         /// </summary>
-        public string parameterValue { get; set; }
+        public string ParameterValue { get; set; }
 
         /// <summary>
         /// A description of the error, not localized,
         /// intended for developer consumption
         /// </summary>
-        public string errorDescription { get; set; }
+        public string ErrorDescription { get; set; }
     }
 }
