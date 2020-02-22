@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace TaskManager.Models
@@ -13,7 +14,7 @@ namespace TaskManager.Models
         public string Name { get; set; }
 
         [Required]
-        public string DueDate { get; set; }
+        public DateTime DueDate { get; set; }
 
         [Required]
         public bool IsCompleted { get; set; }
