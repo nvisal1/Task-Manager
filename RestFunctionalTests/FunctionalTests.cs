@@ -1,0 +1,269 @@
+using Microsoft.Rest;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using RestSDKLibrary;
+using RestSDKLibrary.Models;
+using System;
+using System.Net;
+
+namespace RestFunctionalTests
+{
+    [TestClass]
+    public class FunctionalTests
+    {
+        const string LocalEndpointUrl = "https://localhost:44365";
+        static ServiceClientCredentials serviceClientCredentials = new TokenCredentials("FakeTokenValue");
+        static readonly RestSDKLibraryClient client = new RestSDKLibraryClient(new Uri(LocalEndpointUrl), serviceClientCredentials);
+
+
+        [TestMethod]
+        public void VerifySucessfulTaskCreation()
+        {
+            TaskWriteRequestPayload payload = new TaskWriteRequestPayload()
+            {
+                TaskName = "Valid Task Name",
+                IsCompleted = false,
+                DueDate = "2012-04-23",
+            };
+
+            TaskResponse response = (TaskResponse)client.CreateTask(body: payload);
+
+            Assert.IsNotNull(response.Id);
+            Assert.AreEqual(response.TaskName, payload.TaskName);
+            Assert.AreEqual(response.IsCompleted, payload.IsCompleted);
+            Assert.IsTrue(response.DueDate.Equals(payload.DueDate));
+        }
+
+        [TestMethod]
+        public void VerifyLongTaskNameTaskCreation()
+        {
+            TaskWriteRequestPayload payload = new TaskWriteRequestPayload()
+            {
+                TaskName = "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+                IsCompleted = false,
+                DueDate = "2012-04-23",
+            };
+
+            if (payload.TaskName.Length < 100)
+            {
+                Assert.Fail("This test requires the payload to have a TaskName of length 100 or greater");
+            }
+
+            try
+            {
+                TaskResponse response = (TaskResponse)client.CreateTask(body: payload);
+
+                Assert.Fail("The Task Manager API did not return an error code");
+            } 
+            catch (HttpOperationException error)
+            {
+                Assert.AreEqual(HttpStatusCode.BadRequest, error.Response.StatusCode);
+            }
+        }
+
+        [TestMethod]
+        public void VerifyEmptyTaskNameTaskCreation()
+        {
+            TaskWriteRequestPayload payload = new TaskWriteRequestPayload()
+            {
+                TaskName = "",
+                IsCompleted = false,
+                DueDate = "2012-04-23",
+            };
+
+            if (payload.TaskName.Length > 0)
+            {
+                Assert.Fail("This test requires the payload to have an empty TaskName");
+            }
+
+            try
+            {
+                TaskResponse response = (TaskResponse)client.CreateTask(body: payload);
+
+                Assert.Fail("The Task Manager API did not return an error code");
+            }
+            catch (HttpOperationException error)
+            {
+                Assert.AreEqual(HttpStatusCode.BadRequest, error.Response.StatusCode);
+            }
+        }
+
+        [TestMethod]
+        public void VerifyNullTaskNameTaskCreation()
+        {
+            TaskWriteRequestPayload payload = new TaskWriteRequestPayload()
+            {
+                IsCompleted = false,
+                DueDate = "2012-04-23",
+            };
+
+            if (!String.IsNullOrEmpty(payload.TaskName))
+            {
+                Assert.Fail("This test requires the payload to have a null TaskName");
+            }
+
+            try
+            {
+                TaskResponse response = (TaskResponse)client.CreateTask(body: payload);
+
+                Assert.Fail("The Task Manager API did not return an error code");
+            }
+            catch (HttpOperationException error)
+            {
+                Assert.AreEqual(HttpStatusCode.BadRequest, error.Response.StatusCode);
+            }
+        }
+
+        [TestMethod]
+        public void VerifyNullIsCompletedTaskCreation()
+        {
+            TaskWriteRequestPayload payload = new TaskWriteRequestPayload()
+            {
+                TaskName = "valid name",
+                DueDate = "2012-04-23",
+            };
+
+            if (!payload.IsCompleted)
+            {
+                Assert.Fail("This test requires the payload to have a null IsCompleted");
+            }
+
+            try
+            {
+                TaskResponse response = (TaskResponse)client.CreateTask(body: payload);
+
+                Assert.Fail("The Task Manager API did not return an error code");
+            }
+            catch (HttpOperationException error)
+            {
+                Assert.AreEqual(HttpStatusCode.BadRequest, error.Response.StatusCode);
+            }
+        }
+
+        [TestMethod]
+        public void VerifyEmptyDueDateTaskCreation()
+        {
+            TaskWriteRequestPayload payload = new TaskWriteRequestPayload()
+            {
+                TaskName = "valid name",
+                IsCompleted = false,
+                DueDate = ""
+            };
+
+            if (payload.DueDate.Length > 0)
+            {
+                Assert.Fail("This test requires the payload to have an empty DueDate");
+            }
+
+            try
+            {
+                TaskResponse response = (TaskResponse)client.CreateTask(body: payload);
+
+                Assert.Fail("The Task Manager API did not return an error code");
+            }
+            catch (HttpOperationException error)
+            {
+                Assert.AreEqual(HttpStatusCode.BadRequest, error.Response.StatusCode);
+            }
+        }
+
+        [TestMethod]
+        public void VerifyNullDueDateTaskCreation()
+        {
+            TaskWriteRequestPayload payload = new TaskWriteRequestPayload()
+            {
+                TaskName = "valid name",
+                IsCompleted = false,
+            };
+
+            if (!String.IsNullOrEmpty(payload.DueDate))
+            {
+                Assert.Fail("This test requires the payload to have a null DueDate");
+            }
+
+            try
+            {
+                TaskResponse response = (TaskResponse)client.CreateTask(body: payload);
+
+                Assert.Fail("The Task Manager API did not return an error code");
+            }
+            catch (HttpOperationException error)
+            {
+                Assert.AreEqual(HttpStatusCode.BadRequest, error.Response.StatusCode);
+            }
+        }
+
+        [TestMethod]
+        public void VerifyIncorrectFormatDueDateTaskCreation()
+        {
+            TaskWriteRequestPayload payload = new TaskWriteRequestPayload()
+            {
+                TaskName = "valid name",
+                IsCompleted = false,
+                DueDate = "2012/04/20"
+            };
+
+            try
+            {
+                TaskResponse response = (TaskResponse)client.CreateTask(body: payload);
+
+                Assert.Fail("The Task Manager API did not return an error code");
+            }
+            catch (HttpOperationException error)
+            {
+                Assert.AreEqual(HttpStatusCode.BadRequest, error.Response.StatusCode);
+            }
+        }
+
+        [TestMethod]
+        public void VerifyShortDueDateTaskCreation()
+        {
+            TaskWriteRequestPayload payload = new TaskWriteRequestPayload()
+            {
+                TaskName = "valid name",
+                IsCompleted = false,
+                DueDate = "2012-04"
+            };
+
+            try
+            {
+                TaskResponse response = (TaskResponse)client.CreateTask(body: payload);
+
+                Assert.Fail("The Task Manager API did not return an error code");
+            }
+            catch (HttpOperationException error)
+            {
+                Assert.AreEqual(HttpStatusCode.BadRequest, error.Response.StatusCode);
+            }
+        }
+
+        [TestMethod]
+        public void VerifyDuplicateTaskCreation()
+        {
+            TaskWriteRequestPayload payload = new TaskWriteRequestPayload()
+            {
+                TaskName = "Valid Task Name",
+                IsCompleted = false,
+                DueDate = "2012-04-23",
+            };
+
+            _ = (TaskResponse)client.CreateTask(body: payload);
+
+            try
+            {
+                TaskResponse response = (TaskResponse)client.CreateTask(body: payload);
+
+                Assert.Fail("The Task Manager API did not return an error code");
+            }
+            catch (HttpOperationException error)
+            {
+                Assert.AreEqual(HttpStatusCode.Conflict, error.Response.StatusCode);
+            }
+        }
+
+        [TestMethod]
+        public void VerifySuccessfulTaskUpdate()
+        {
+           
+        }
+    }
+}
