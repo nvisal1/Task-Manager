@@ -753,5 +753,28 @@ namespace RestFunctionalTests
             Assert.IsTrue(DateTime.Compare(Convert.ToDateTime(getAllResponse[1].DueDate), Convert.ToDateTime(getAllResponse[2].DueDate)) > 0);
             Assert.IsTrue(DateTime.Compare(Convert.ToDateTime(getAllResponse[2].DueDate), Convert.ToDateTime(getAllResponse[3].DueDate)) > 0);
         }
+
+        [TestMethod]
+        public void VerifyInvalidOrderByDateReadAllTasks()
+        {
+            ErrorResponse getAllResponse = (ErrorResponse)client.GetAllTasks(taskStatus: "All", orderByDate: "Invalid");
+
+            Assert.AreEqual(getAllResponse.ErrorNumber, 7);
+            Assert.IsTrue(getAllResponse.ErrorDescription.Equals("The parameter value is not valid"));
+            Assert.IsTrue(getAllResponse.ParameterName.Equals("orderByDate"));
+            Assert.IsTrue(getAllResponse.ParameterValue.Equals("Invalid"));
+        }
+
+        [TestMethod]
+        public void VerifyInvalidTaskStatusReadAllTasks()
+        {
+            ErrorResponse getAllResponse = (ErrorResponse)client.GetAllTasks(taskStatus: "Invalid", orderByDate: "Asc");
+
+            Assert.AreEqual(getAllResponse.ErrorNumber, 7);
+            Assert.IsTrue(getAllResponse.ErrorDescription.Equals("The parameter value is not valid"));
+            Assert.IsTrue(getAllResponse.ParameterName.Equals("taskStatus"));
+            Assert.IsTrue(getAllResponse.ParameterValue.Equals("Invalid"));
+        }
+
     }
 }

@@ -266,6 +266,28 @@ namespace TaskManager.Controllers
             {
                 List<TaskResponse> tasks = new List<TaskResponse>{};
 
+                if (!(orderByDate.Equals("") || orderByDate.Equals("Asc") || orderByDate.Equals("Desc")))
+                {
+                    return StatusCode((int)HttpStatusCode.BadRequest, new ErrorResponse()
+                    {
+                        ErrorNumber = 7,
+                        ErrorDescription = "The parameter value is not valid",
+                        ParameterName = "orderByDate",
+                        ParameterValue = orderByDate,
+                    });
+                }
+
+                if (!(taskStatus.Equals("") || taskStatus.Equals("Completed") || taskStatus.Equals("NotCompleted") || taskStatus.Equals("All")))
+                {
+                    return StatusCode((int)HttpStatusCode.BadRequest, new ErrorResponse()
+                    {
+                        ErrorNumber = 7,
+                        ErrorDescription = "The parameter value is not valid",
+                        ParameterName = "taskStatus",
+                        ParameterValue = taskStatus,
+                    });
+                }
+
                 if (orderByDate.Equals("Asc") && taskStatus.Equals("Completed"))
                 {
                     tasks = (from t in _context.Tasks
