@@ -61,11 +61,23 @@ namespace TaskManager.Controllers
                                 });
                             }
 
+
+                            if (!DateTime.TryParse(taskWriteRequestPayload.DueDate, out DateTime expectedDate))
+                            {
+                                return StatusCode((int)HttpStatusCode.Forbidden, new ErrorResponse()
+                                {
+                                    ErrorNumber = 7,
+                                    ErrorDescription = "The parameter value is not valid",
+                                    ParameterName = "DueDate",
+                                    ParameterValue = taskWriteRequestPayload.DueDate,
+                                });
+                            }
+
                             task = new Task()
                             {
                                 Name = taskWriteRequestPayload.TaskName,
                                 DueDate = Convert.ToDateTime(taskWriteRequestPayload.DueDate),
-                                IsCompleted = taskWriteRequestPayload.IsCompleted,
+                                IsCompleted = (bool)taskWriteRequestPayload.IsCompleted,
                             };
 
                             _context.Tasks.Add(task);
@@ -100,14 +112,14 @@ namespace TaskManager.Controllers
                 else
                 {
                     List<ErrorResponse> errorResponses = BuildErrorResponseList(taskWriteRequestPayload);
-                    return StatusCode((int)HttpStatusCode.BadRequest, errorResponses);
+                    return StatusCode((int)HttpStatusCode.BadRequest, errorResponses[0]);
                 }
             } catch (Exception e)
             {
                 if (!ModelState.IsValid)
                 {
                     List<ErrorResponse> errorResponses = BuildErrorResponseList(taskWriteRequestPayload);
-                    return StatusCode((int)HttpStatusCode.BadRequest, errorResponses);
+                    return StatusCode((int)HttpStatusCode.BadRequest, errorResponses[0]);
                 }
                
                 return StatusCode((int)HttpStatusCode.InternalServerError);
@@ -136,7 +148,7 @@ namespace TaskManager.Controllers
 
                     task.Name = taskWriteRequestPayload.TaskName;
                     task.DueDate = Convert.ToDateTime(taskWriteRequestPayload.DueDate);
-                    task.IsCompleted = taskWriteRequestPayload.IsCompleted;
+                    task.IsCompleted = (bool)taskWriteRequestPayload.IsCompleted;
 
                     _context.SaveChanges();
                 }

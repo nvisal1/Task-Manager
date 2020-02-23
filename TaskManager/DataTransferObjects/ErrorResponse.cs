@@ -34,6 +34,7 @@
             if (encodedErrorDescription.Contains("field is required")) return 3;
             else if (encodedErrorDescription.Contains("maximum length")) return 2;
             else if (encodedErrorDescription.Contains("JSON value could not be converted")) return 7;
+            else if (encodedErrorDescription.Contains("minimum length")) return 6;
 
             return 0;
         }

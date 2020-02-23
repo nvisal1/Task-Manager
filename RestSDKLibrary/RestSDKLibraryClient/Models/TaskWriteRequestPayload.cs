@@ -34,7 +34,7 @@ namespace RestSDKLibrary.Models
         /// true if completed, false if not completed
         /// </summary>
         [JsonProperty(PropertyName = "isCompleted")]
-        public bool IsCompleted { get; set; }
+        public bool? IsCompleted { get; set; }
 
         /// <summary>
         /// The date the task is due to be completed
@@ -43,31 +43,5 @@ namespace RestSDKLibrary.Models
         /// </summary>
         [JsonProperty(PropertyName = "dueDate")]
         public string DueDate { get; set; }
-
-        /// <summary>
-        /// Validate the object. Throws ValidationException if validation fails.
-        /// </summary>
-        public virtual void Validate()
-        {
-            if (TaskName == null)
-            {
-                throw new ValidationException(ValidationRules.CannotBeNull, "TaskName");
-            }
-            if (DueDate == null)
-            {
-                throw new ValidationException(ValidationRules.CannotBeNull, "DueDate");
-            }
-            if (this.TaskName != null)
-            {
-                if (this.TaskName.Length > 100)
-                {
-                    throw new ValidationException(ValidationRules.MaxLength, "TaskName", 100);
-                }
-                if (this.TaskName.Length < 0)
-                {
-                    throw new ValidationException(ValidationRules.MinLength, "TaskName", 0);
-                }
-            }
-        }
     }
 }

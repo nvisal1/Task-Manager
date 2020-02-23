@@ -50,16 +50,12 @@ namespace RestFunctionalTests
                 Assert.Fail("This test requires the payload to have a TaskName of length 100 or greater");
             }
 
-            try
-            {
-                var response = client.CreateTask(body: payload);
+            ErrorResponse response = (ErrorResponse)client.CreateTask(body: payload);
 
-                Assert.Fail("The Task Manager API did not return an error code");
-            } 
-            catch (HttpOperationException error)
-            {
-                Assert.AreEqual(HttpStatusCode.BadRequest, error.Response.StatusCode);
-            }
+            Assert.AreEqual(response.ErrorNumber, 2);
+            Assert.IsTrue(response.ErrorDescription.Equals("The parameter value is too large"));
+            Assert.IsTrue(response.ParameterName.Equals("TaskName"));
+            Assert.IsTrue(response.ParameterValue.Equals(payload.TaskName));
         }
 
         [TestMethod]
@@ -77,17 +73,15 @@ namespace RestFunctionalTests
                 Assert.Fail("This test requires the payload to have an empty TaskName");
             }
 
-            try
-            {
-                var response = client.CreateTask(body: payload);
+            ErrorResponse response = (ErrorResponse)client.CreateTask(body: payload);
 
-                Assert.Fail("The Task Manager API did not return an error code");
-            }
-            catch (HttpOperationException error)
-            {
-                Assert.AreEqual(HttpStatusCode.BadRequest, error.Response.StatusCode);
-            }
+            Assert.AreEqual(response.ErrorNumber, 3);
+            Assert.IsTrue(response.ErrorDescription.Equals("The parameter is required"));
+            Assert.IsTrue(response.ParameterName.Equals("TaskName"));
+            Assert.IsTrue(response.ParameterValue.Equals(payload.TaskName));
         }
+
+         
 
         [TestMethod]
         public void VerifyNullTaskNameTaskCreation()
@@ -103,16 +97,12 @@ namespace RestFunctionalTests
                 Assert.Fail("This test requires the payload to have a null TaskName");
             }
 
-            try
-            {
-                var response = client.CreateTask(body: payload);
+            ErrorResponse response = (ErrorResponse)client.CreateTask(body: payload);
 
-                Assert.Fail("The Task Manager API did not return an error code");
-            }
-            catch (HttpOperationException error)
-            {
-                Assert.AreEqual(HttpStatusCode.BadRequest, error.Response.StatusCode);
-            }
+            Assert.AreEqual(response.ErrorNumber, 3);
+            Assert.IsTrue(response.ErrorDescription.Equals("The parameter is required"));
+            Assert.IsTrue(response.ParameterName.Equals("TaskName"));
+            Assert.IsTrue(response.ParameterValue == null);
         }
 
         [TestMethod]
@@ -124,21 +114,17 @@ namespace RestFunctionalTests
                 DueDate = "2012-04-23",
             };
 
-            if (!payload.IsCompleted)
+            if (payload.IsCompleted != null)
             {
                 Assert.Fail("This test requires the payload to have a null IsCompleted");
             }
+             
+            ErrorResponse response = (ErrorResponse)client.CreateTask(body: payload);
 
-            try
-            {
-                var response = client.CreateTask(body: payload);
-
-                Assert.Fail("The Task Manager API did not return an error code");
-            }
-            catch (HttpOperationException error)
-            {
-                Assert.AreEqual(HttpStatusCode.BadRequest, error.Response.StatusCode);
-            }
+            Assert.AreEqual(response.ErrorNumber, 3);
+            Assert.IsTrue(response.ErrorDescription.Equals("The parameter is required"));
+            Assert.IsTrue(response.ParameterName.Equals("IsCompleted"));
+            Assert.IsTrue(response.ParameterValue == null);
         }
 
         [TestMethod]
@@ -156,16 +142,12 @@ namespace RestFunctionalTests
                 Assert.Fail("This test requires the payload to have an empty DueDate");
             }
 
-            try
-            {
-                var response = client.CreateTask(body: payload);
+            ErrorResponse response = (ErrorResponse)client.CreateTask(body: payload);
 
-                Assert.Fail("The Task Manager API did not return an error code");
-            }
-            catch (HttpOperationException error)
-            {
-                Assert.AreEqual(HttpStatusCode.BadRequest, error.Response.StatusCode);
-            }
+            Assert.AreEqual(response.ErrorNumber, 3);
+            Assert.IsTrue(response.ErrorDescription.Equals("The parameter is required"));
+            Assert.IsTrue(response.ParameterName.Equals("DueDate"));
+            Assert.IsTrue(response.ParameterValue.Equals(payload.DueDate));
         }
 
         [TestMethod]
@@ -182,16 +164,12 @@ namespace RestFunctionalTests
                 Assert.Fail("This test requires the payload to have a null DueDate");
             }
 
-            try
-            {
-                var response = client.CreateTask(body: payload);
+            ErrorResponse response = (ErrorResponse)client.CreateTask(body: payload);
 
-                Assert.Fail("The Task Manager API did not return an error code");
-            }
-            catch (HttpOperationException error)
-            {
-                Assert.AreEqual(HttpStatusCode.BadRequest, error.Response.StatusCode);
-            }
+            Assert.AreEqual(response.ErrorNumber, 3);
+            Assert.IsTrue(response.ErrorDescription.Equals("The parameter is required"));
+            Assert.IsTrue(response.ParameterName.Equals("DueDate"));
+            Assert.IsTrue(response.ParameterValue == null);
         }
 
         [TestMethod]
@@ -201,19 +179,15 @@ namespace RestFunctionalTests
             {
                 TaskName = "valid name",
                 IsCompleted = false,
-                DueDate = "2012/04/20"
+                DueDate = "string"
             };
 
-            try
-            {
-                var response = client.CreateTask(body: payload);
+            ErrorResponse response = (ErrorResponse)client.CreateTask(body: payload);
 
-                Assert.Fail("The Task Manager API did not return an error code");
-            }
-            catch (HttpOperationException error)
-            {
-                Assert.AreEqual(HttpStatusCode.BadRequest, error.Response.StatusCode);
-            }
+            Assert.AreEqual(response.ErrorNumber, 7);
+            Assert.IsTrue(response.ErrorDescription.Equals("The parameter value is not valid"));
+            Assert.IsTrue(response.ParameterName.Equals("DueDate"));
+            Assert.IsTrue(response.ParameterValue.Equals(payload.DueDate));
         }
 
         [TestMethod]
@@ -226,16 +200,12 @@ namespace RestFunctionalTests
                 DueDate = "2012-04"
             };
 
-            try
-            {
-                var response = client.CreateTask(body: payload);
+            ErrorResponse response = (ErrorResponse)client.CreateTask(body: payload);
 
-                Assert.Fail("The Task Manager API did not return an error code");
-            }
-            catch (HttpOperationException error)
-            {
-                Assert.AreEqual(HttpStatusCode.BadRequest, error.Response.StatusCode);
-            }
+            Assert.AreEqual(response.ErrorNumber, 6);
+            Assert.IsTrue(response.ErrorDescription.Equals("The parameter value is too small"));
+            Assert.IsTrue(response.ParameterName.Equals("DueDate"));
+            Assert.IsTrue(response.ParameterValue.Equals(payload.DueDate));
         }
 
         [TestMethod]
@@ -248,11 +218,16 @@ namespace RestFunctionalTests
                 DueDate = "2012-04-23",
             };
 
-            _ = client.CreateTask(body: payload);
+            TaskResponse taskResponse = (TaskResponse)client.CreateTask(body: payload);
 
-            ErrorResponse response = (ErrorResponse)client.CreateTask(body: payload);
+            ErrorResponse errorResponse = (ErrorResponse)client.CreateTask(body: payload);
 
-            Assert.AreEqual(response.ErrorNumber, 1);
+            Assert.AreEqual(errorResponse.ErrorNumber, 1);
+            Assert.IsTrue(errorResponse.ErrorDescription.Equals("The entity already exists"));
+            Assert.IsTrue(errorResponse.ParameterName.Equals("TaskName"));
+            Assert.IsTrue(errorResponse.ParameterValue.Equals(payload.TaskName));
+
+            client.DeleteTask((int)taskResponse.Id);
         }
 
         [TestMethod]
