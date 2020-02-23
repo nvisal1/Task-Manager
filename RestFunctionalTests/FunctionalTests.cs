@@ -27,12 +27,12 @@ namespace RestFunctionalTests
 
             TaskResponse response = (TaskResponse)client.CreateTask(body: payload);
 
+            client.DeleteTask((int)response.Id);
+
             Assert.IsNotNull(response.Id);
             Assert.AreEqual(response.TaskName, payload.TaskName);
             Assert.AreEqual(response.IsCompleted, payload.IsCompleted);
             Assert.IsTrue(response.DueDate.Equals(payload.DueDate));
-
-            client.DeleteTask((int)response.Id);
         }
 
         [TestMethod]
@@ -179,7 +179,7 @@ namespace RestFunctionalTests
             {
                 TaskName = "valid name",
                 IsCompleted = false,
-                DueDate = "string"
+                DueDate = "stringgggg"
             };
 
             ErrorResponse response = (ErrorResponse)client.CreateTask(body: payload);
@@ -222,19 +222,287 @@ namespace RestFunctionalTests
 
             ErrorResponse errorResponse = (ErrorResponse)client.CreateTask(body: payload);
 
+            client.DeleteTask((int)taskResponse.Id);
+
             Assert.AreEqual(errorResponse.ErrorNumber, 1);
             Assert.IsTrue(errorResponse.ErrorDescription.Equals("The entity already exists"));
             Assert.IsTrue(errorResponse.ParameterName.Equals("TaskName"));
             Assert.IsTrue(errorResponse.ParameterValue.Equals(payload.TaskName));
-
-            client.DeleteTask((int)taskResponse.Id);
         }
 
         [TestMethod]
         public void VerifySuccessfulTaskUpdate()
         {
-           
+            TaskWriteRequestPayload createPayload = new TaskWriteRequestPayload()
+            {
+                TaskName = "Valid Task Name",
+                IsCompleted = false,
+                DueDate = "2012-04-23",
+            };
 
+            TaskResponse creationResponse = (TaskResponse)client.CreateTask(body: createPayload);
+
+            TaskWriteRequestPayload updatePayload = new TaskWriteRequestPayload()
+            {
+                TaskName = "Updated Valid Task Name",
+                IsCompleted = false,
+                DueDate = "2012-04-23",
+            };
+
+            ErrorResponse updateResponse = client.UpdateTask((int)creationResponse.Id, updatePayload);
+
+            client.DeleteTask((int)creationResponse.Id);
+
+            Assert.IsNull(updateResponse);
         }
+
+        [TestMethod]
+        public void VerifyLongTaskNameTaskUpdate()
+        {
+            TaskWriteRequestPayload createPayload = new TaskWriteRequestPayload()
+            {
+                TaskName = "Valid Task Name",
+                IsCompleted = false,
+                DueDate = "2012-04-23",
+            };
+
+            TaskResponse creationResponse = (TaskResponse)client.CreateTask(body: createPayload);
+
+            TaskWriteRequestPayload updatePayload = new TaskWriteRequestPayload()
+            {
+                TaskName = "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+                IsCompleted = false,
+                DueDate = "2012-04-23",
+            };
+
+            ErrorResponse updateResponse = client.UpdateTask((int)creationResponse.Id, updatePayload);
+
+            client.DeleteTask((int)creationResponse.Id);
+
+            Assert.AreEqual(updateResponse.ErrorNumber, 2);
+            Assert.IsTrue(updateResponse.ErrorDescription.Equals("The parameter value is too large"));
+            Assert.IsTrue(updateResponse.ParameterName.Equals("TaskName"));
+            Assert.IsTrue(updateResponse.ParameterValue.Equals(updatePayload.TaskName));
+        }
+
+        [TestMethod]
+        public void VerifyEmptyTaskNameTaskUpdate()
+        {
+            TaskWriteRequestPayload createPayload = new TaskWriteRequestPayload()
+            {
+                TaskName = "Valid Task Name",
+                IsCompleted = false,
+                DueDate = "2012-04-23",
+            };
+
+            TaskResponse creationResponse = (TaskResponse)client.CreateTask(body: createPayload);
+
+            TaskWriteRequestPayload updatePayload = new TaskWriteRequestPayload()
+            {
+                TaskName = "",
+                IsCompleted = false,
+                DueDate = "2012-04-23",
+            };
+
+            ErrorResponse updateResponse = client.UpdateTask((int)creationResponse.Id, updatePayload);
+
+            client.DeleteTask((int)creationResponse.Id);
+
+            Assert.AreEqual(updateResponse.ErrorNumber, 3);
+            Assert.IsTrue(updateResponse.ErrorDescription.Equals("The parameter is required"));
+            Assert.IsTrue(updateResponse.ParameterName.Equals("TaskName"));
+            Assert.IsTrue(updateResponse.ParameterValue.Equals(updatePayload.TaskName));
+        }
+
+        [TestMethod]
+        public void VerifyNullTaskNameTaskUpdate()
+        {
+            TaskWriteRequestPayload createPayload = new TaskWriteRequestPayload()
+            {
+                TaskName = "Valid Task Name",
+                IsCompleted = false,
+                DueDate = "2012-04-23",
+            };
+
+            TaskResponse creationResponse = (TaskResponse)client.CreateTask(body: createPayload);
+
+            TaskWriteRequestPayload updatePayload = new TaskWriteRequestPayload()
+            {
+                IsCompleted = false,
+                DueDate = "2012-04-23",
+            };
+
+            ErrorResponse updateResponse = client.UpdateTask((int)creationResponse.Id, updatePayload);
+
+            client.DeleteTask((int)creationResponse.Id);
+
+            Assert.AreEqual(updateResponse.ErrorNumber, 3);
+            Assert.IsTrue(updateResponse.ErrorDescription.Equals("The parameter is required"));
+            Assert.IsTrue(updateResponse.ParameterName.Equals("TaskName"));
+            Assert.IsTrue(updateResponse.ParameterValue == null);
+        }
+
+        [TestMethod]
+        public void VerifyNullIsCompletedTaskUpdate()
+        {
+            TaskWriteRequestPayload createPayload = new TaskWriteRequestPayload()
+            {
+                TaskName = "Valid Task Name",
+                IsCompleted = false,
+                DueDate = "2012-04-23",
+            };
+
+            TaskResponse creationResponse = (TaskResponse)client.CreateTask(body: createPayload);
+
+            TaskWriteRequestPayload updatePayload = new TaskWriteRequestPayload()
+            {
+                TaskName = "Valid Task Name",
+                DueDate = "2012-04-23",
+            };
+
+            ErrorResponse updateResponse = client.UpdateTask((int)creationResponse.Id, updatePayload);
+
+            client.DeleteTask((int)creationResponse.Id);
+
+            Assert.AreEqual(updateResponse.ErrorNumber, 3);
+            Assert.IsTrue(updateResponse.ErrorDescription.Equals("The parameter is required"));
+            Assert.IsTrue(updateResponse.ParameterName.Equals("IsCompleted"));
+            Assert.IsTrue(updateResponse.ParameterValue == null);
+        }
+
+        [TestMethod]
+        public void VerifyEmptyDueDateTaskUpdate()
+        {
+            TaskWriteRequestPayload createPayload = new TaskWriteRequestPayload()
+            {
+                TaskName = "Valid Task Name",
+                IsCompleted = false,
+                DueDate = "2012-04-23",
+            };
+
+            TaskResponse creationResponse = (TaskResponse)client.CreateTask(body: createPayload);
+
+            TaskWriteRequestPayload updatePayload = new TaskWriteRequestPayload()
+            {
+                TaskName = "Valid Task Name",
+                IsCompleted = false,
+                DueDate = "",
+            };
+
+            ErrorResponse updateResponse = client.UpdateTask((int)creationResponse.Id, updatePayload);
+
+            client.DeleteTask((int)creationResponse.Id);
+
+            Assert.AreEqual(updateResponse.ErrorNumber, 3);
+            Assert.IsTrue(updateResponse.ErrorDescription.Equals("The parameter is required"));
+            Assert.IsTrue(updateResponse.ParameterName.Equals("DueDate"));
+            Assert.IsTrue(updateResponse.ParameterValue.Equals(updatePayload.DueDate));
+        }
+
+        [TestMethod]
+        public void VerifyNullDueDateTaskUpdate()
+        {
+            TaskWriteRequestPayload createPayload = new TaskWriteRequestPayload()
+            {
+                TaskName = "Valid Task Name",
+                IsCompleted = false,
+                DueDate = "2012-04-23",
+            };
+
+            TaskResponse creationResponse = (TaskResponse)client.CreateTask(body: createPayload);
+
+            TaskWriteRequestPayload updatePayload = new TaskWriteRequestPayload()
+            {
+                TaskName = "Valid Task Name",
+                IsCompleted = false,
+            };
+
+            ErrorResponse updateResponse = client.UpdateTask((int)creationResponse.Id, updatePayload);
+
+            client.DeleteTask((int)creationResponse.Id);
+
+            Assert.AreEqual(updateResponse.ErrorNumber, 3);
+            Assert.IsTrue(updateResponse.ErrorDescription.Equals("The parameter is required"));
+            Assert.IsTrue(updateResponse.ParameterName.Equals("DueDate"));
+            Assert.IsTrue(updateResponse.ParameterValue == null);
+        }
+
+        [TestMethod]
+        public void VerifyIncorrectFormatDueDateTaskUpdate()
+        {
+            TaskWriteRequestPayload createPayload = new TaskWriteRequestPayload()
+            {
+                TaskName = "Valid Task Name",
+                IsCompleted = false,
+                DueDate = "2012-04-23",
+            };
+
+            TaskResponse creationResponse = (TaskResponse)client.CreateTask(body: createPayload);
+
+            TaskWriteRequestPayload updatePayload = new TaskWriteRequestPayload()
+            {
+                TaskName = "Valid Task Name",
+                IsCompleted = false,
+                DueDate = "stringgggg",
+            };
+
+            ErrorResponse updateResponse = client.UpdateTask((int)creationResponse.Id, updatePayload);
+
+            client.DeleteTask((int)creationResponse.Id);
+
+            Assert.AreEqual(updateResponse.ErrorNumber, 7);
+            Assert.IsTrue(updateResponse.ErrorDescription.Equals("The parameter value is not valid"));
+            Assert.IsTrue(updateResponse.ParameterName.Equals("DueDate"));
+            Assert.IsTrue(updateResponse.ParameterValue.Equals(updatePayload.DueDate));
+        }
+
+        [TestMethod]
+        public void VerifyShortDueDateTaskUpdate()
+        {
+            TaskWriteRequestPayload createPayload = new TaskWriteRequestPayload()
+            {
+                TaskName = "Valid Task Name",
+                IsCompleted = false,
+                DueDate = "2012-04-23",
+            };
+
+            TaskResponse creationResponse = (TaskResponse)client.CreateTask(body: createPayload);
+
+            TaskWriteRequestPayload updatePayload = new TaskWriteRequestPayload()
+            {
+                TaskName = "Valid Task Name",
+                IsCompleted = false,
+                DueDate = "string",
+            };
+
+            ErrorResponse updateResponse = client.UpdateTask((int)creationResponse.Id, updatePayload);
+
+            client.DeleteTask((int)creationResponse.Id);
+
+            Assert.AreEqual(updateResponse.ErrorNumber, 6);
+            Assert.IsTrue(updateResponse.ErrorDescription.Equals("The parameter value is too small"));
+            Assert.IsTrue(updateResponse.ParameterName.Equals("DueDate"));
+            Assert.IsTrue(updateResponse.ParameterValue.Equals(updatePayload.DueDate));
+        }
+
+        [TestMethod]
+        public void VerifyNotFoundTaskupdate()
+        {
+            TaskWriteRequestPayload updatePayload = new TaskWriteRequestPayload()
+            {
+                TaskName = "Valid Task Name",
+                IsCompleted = false,
+                DueDate = "1010-10-10",
+            };
+
+            ErrorResponse updateResponse = client.UpdateTask(15, updatePayload);
+
+            Assert.AreEqual(updateResponse.ErrorNumber, 5);
+            Assert.IsTrue(updateResponse.ErrorDescription.Equals("The entity could not be found"));
+            Assert.IsTrue(updateResponse.ParameterName.Equals("TaskName"));
+            Assert.IsTrue(updateResponse.ParameterValue.Equals(updatePayload.TaskName));
+        }
+
+
     }
 }

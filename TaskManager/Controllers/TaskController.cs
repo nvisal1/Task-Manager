@@ -143,7 +143,24 @@ namespace TaskManager.Controllers
 
                     if (task == null)
                     {
-                        return NotFound();
+                        return StatusCode((int)HttpStatusCode.NotFound, new ErrorResponse()
+                        {
+                            ErrorNumber = 5,
+                            ErrorDescription = "The entity could not be found",
+                            ParameterName = "TaskName",
+                            ParameterValue = taskWriteRequestPayload.TaskName,
+                        });
+                    }
+
+                    if (!DateTime.TryParse(taskWriteRequestPayload.DueDate, out DateTime expectedDate))
+                    {
+                        return StatusCode((int)HttpStatusCode.BadRequest, new ErrorResponse()
+                        {
+                            ErrorNumber = 7,
+                            ErrorDescription = "The parameter value is not valid",
+                            ParameterName = "DueDate",
+                            ParameterValue = taskWriteRequestPayload.DueDate,
+                        });
                     }
 
                     task.Name = taskWriteRequestPayload.TaskName;
@@ -152,13 +169,24 @@ namespace TaskManager.Controllers
 
                     _context.SaveChanges();
                 }
+                else
+                {
+                    List<ErrorResponse> errorResponses = BuildErrorResponseList(taskWriteRequestPayload);
+                    return StatusCode((int)HttpStatusCode.BadRequest, errorResponses[0]);
+                }
             }
             catch (Exception e)
             {
+                if (!ModelState.IsValid)
+                {
+                    List<ErrorResponse> errorResponses = BuildErrorResponseList(taskWriteRequestPayload);
+                    return StatusCode((int)HttpStatusCode.BadRequest, errorResponses[0]);
+                }
+
                 return StatusCode((int)HttpStatusCode.InternalServerError);
             }
 
-            return NoContent();
+            return StatusCode((int)HttpStatusCode.NoContent);
         }
 
         [HttpDelete("{id}")]
