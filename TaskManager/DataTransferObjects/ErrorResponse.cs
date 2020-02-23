@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace TaskManager.DataTransferObjects
+﻿namespace TaskManager.DataTransferObjects
 {
     public class ErrorResponse
     {
@@ -36,10 +31,9 @@ namespace TaskManager.DataTransferObjects
 
         public static int GetErrorNumberFromDescription(string encodedErrorDescription)
         {
-            if (int.TryParse(encodedErrorDescription, out int errorNumber))
-            {
-                return errorNumber;
-            }
+            if (encodedErrorDescription.Contains("field is required")) return 3;
+            else if (encodedErrorDescription.Contains("maximum length")) return 2;
+            else if (encodedErrorDescription.Contains("JSON value could not be converted")) return 7;
 
             return 0;
         }

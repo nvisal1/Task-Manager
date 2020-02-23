@@ -31,6 +31,8 @@ namespace RestFunctionalTests
             Assert.AreEqual(response.TaskName, payload.TaskName);
             Assert.AreEqual(response.IsCompleted, payload.IsCompleted);
             Assert.IsTrue(response.DueDate.Equals(payload.DueDate));
+
+            client.DeleteTask((int)response.Id);
         }
 
         [TestMethod]

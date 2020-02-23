@@ -79,7 +79,7 @@ namespace TaskManager.Controllers
                             {
                                 Id = (int)task.Id,
                                 TaskName = task.Name,
-                                DueDate = task.DueDate.ToString(),
+                                DueDate = taskWriteRequestPayload.DueDate,
                                 IsCompleted = task.IsCompleted,
                             };
 
@@ -99,29 +99,17 @@ namespace TaskManager.Controllers
                 }
                 else
                 {
-                    List<ErrorResponse> errorResponses = new List<ErrorResponse>();
-
-                    foreach (string key in ModelState.Keys)
-                    {
-                        if (ModelState[key].ValidationState == Microsoft.AspNetCore.Mvc.ModelBinding.ModelValidationState.Invalid)
-                        {
-                            foreach (Microsoft.AspNetCore.Mvc.ModelBinding.ModelError error in ModelState[key].Errors)
-                            {
-                                string cleansedKey = key.CleanseModelStateKey();
-
-                                ErrorResponse errorResponse = new ErrorResponse();
-                                (errorResponse.ErrorDescription, errorResponse.ErrorNumber) = ErrorResponse.GetErrorMessage(error.ErrorMessage);
-                                errorResponse.ParameterName = cleansedKey;
-                                errorResponse.ParameterValue = (string)typeof(TaskWriteRequestPayload).GetProperty(cleansedKey).GetValue(taskWriteRequestPayload);
-                                errorResponses.Add(errorResponse);
-                            }
-                        }
-                    }
-
+                    List<ErrorResponse> errorResponses = BuildErrorResponseList(taskWriteRequestPayload);
                     return StatusCode((int)HttpStatusCode.BadRequest, errorResponses);
                 }
             } catch (Exception e)
             {
+                if (!ModelState.IsValid)
+                {
+                    List<ErrorResponse> errorResponses = BuildErrorResponseList(taskWriteRequestPayload);
+                    return StatusCode((int)HttpStatusCode.BadRequest, errorResponses);
+                }
+               
                 return StatusCode((int)HttpStatusCode.InternalServerError);
             }
         }
@@ -255,6 +243,42 @@ namespace TaskManager.Controllers
             }
 
             return false;
+        }
+
+        private List<ErrorResponse> BuildErrorResponseList(TaskWriteRequestPayload taskWriteRequestPayload)
+        {
+            List<ErrorResponse> errorResponses = new List<ErrorResponse>();
+
+            foreach (string key in ModelState.Keys)
+            {
+                if (ModelState[key].ValidationState == Microsoft.AspNetCore.Mvc.ModelBinding.ModelValidationState.Invalid)
+                {
+                    foreach (Microsoft.AspNetCore.Mvc.ModelBinding.ModelError error in ModelState[key].Errors)
+                    {
+                        string cleansedKey = key.CleanseModelStateKey();
+
+                        try
+                        {
+                            ErrorResponse errorResponse = new ErrorResponse();
+                            (errorResponse.ErrorDescription, errorResponse.ErrorNumber) = ErrorResponse.GetErrorMessage(error.ErrorMessage);
+                            errorResponse.ParameterName = cleansedKey;
+                            errorResponse.ParameterValue = (string)typeof(TaskWriteRequestPayload).GetProperty(cleansedKey).GetValue(taskWriteRequestPayload);
+                            errorResponses.Add(errorResponse);
+                        }
+                        catch (NullReferenceException _)
+                        {
+                            ErrorResponse errorResponse = new ErrorResponse();
+                            (errorResponse.ErrorDescription, errorResponse.ErrorNumber) = ErrorResponse.GetErrorMessage(error.ErrorMessage);
+                            errorResponse.ParameterName = cleansedKey;
+                            errorResponse.ParameterValue = null;
+                            errorResponses.Add(errorResponse);
+                        }
+
+                    }
+                }
+            }
+
+            return errorResponses;
         }
 
     }
