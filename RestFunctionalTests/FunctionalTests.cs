@@ -10,7 +10,7 @@ namespace RestFunctionalTests
     [TestClass]
     public class FunctionalTests
     {
-        const string LocalEndpointUrl = "https://localhost:44365";
+        const string LocalEndpointUrl = "https://localhost:44309";
         static ServiceClientCredentials serviceClientCredentials = new TokenCredentials("FakeTokenValue");
         static readonly RestSDKLibraryClient client = new RestSDKLibraryClient(new Uri(LocalEndpointUrl), serviceClientCredentials);
 
@@ -50,7 +50,7 @@ namespace RestFunctionalTests
 
             try
             {
-                TaskResponse response = (TaskResponse)client.CreateTask(body: payload);
+                var response = client.CreateTask(body: payload);
 
                 Assert.Fail("The Task Manager API did not return an error code");
             } 
@@ -77,7 +77,7 @@ namespace RestFunctionalTests
 
             try
             {
-                TaskResponse response = (TaskResponse)client.CreateTask(body: payload);
+                var response = client.CreateTask(body: payload);
 
                 Assert.Fail("The Task Manager API did not return an error code");
             }
@@ -103,7 +103,7 @@ namespace RestFunctionalTests
 
             try
             {
-                TaskResponse response = (TaskResponse)client.CreateTask(body: payload);
+                var response = client.CreateTask(body: payload);
 
                 Assert.Fail("The Task Manager API did not return an error code");
             }
@@ -129,7 +129,7 @@ namespace RestFunctionalTests
 
             try
             {
-                TaskResponse response = (TaskResponse)client.CreateTask(body: payload);
+                var response = client.CreateTask(body: payload);
 
                 Assert.Fail("The Task Manager API did not return an error code");
             }
@@ -156,7 +156,7 @@ namespace RestFunctionalTests
 
             try
             {
-                TaskResponse response = (TaskResponse)client.CreateTask(body: payload);
+                var response = client.CreateTask(body: payload);
 
                 Assert.Fail("The Task Manager API did not return an error code");
             }
@@ -182,7 +182,7 @@ namespace RestFunctionalTests
 
             try
             {
-                TaskResponse response = (TaskResponse)client.CreateTask(body: payload);
+                var response = client.CreateTask(body: payload);
 
                 Assert.Fail("The Task Manager API did not return an error code");
             }
@@ -204,7 +204,7 @@ namespace RestFunctionalTests
 
             try
             {
-                TaskResponse response = (TaskResponse)client.CreateTask(body: payload);
+                var response = client.CreateTask(body: payload);
 
                 Assert.Fail("The Task Manager API did not return an error code");
             }
@@ -226,7 +226,7 @@ namespace RestFunctionalTests
 
             try
             {
-                TaskResponse response = (TaskResponse)client.CreateTask(body: payload);
+                var response = client.CreateTask(body: payload);
 
                 Assert.Fail("The Task Manager API did not return an error code");
             }
@@ -241,23 +241,16 @@ namespace RestFunctionalTests
         {
             TaskWriteRequestPayload payload = new TaskWriteRequestPayload()
             {
-                TaskName = "Valid Task Name",
+                TaskName = "Valid Task Name duplicate",
                 IsCompleted = false,
                 DueDate = "2012-04-23",
             };
 
-            _ = (TaskResponse)client.CreateTask(body: payload);
+            _ = client.CreateTask(body: payload);
 
-            try
-            {
-                TaskResponse response = (TaskResponse)client.CreateTask(body: payload);
+            ErrorResponse response = (ErrorResponse)client.CreateTask(body: payload);
 
-                Assert.Fail("The Task Manager API did not return an error code");
-            }
-            catch (HttpOperationException error)
-            {
-                Assert.AreEqual(HttpStatusCode.Conflict, error.Response.StatusCode);
-            }
+            Assert.AreEqual(response.ErrorNumber, 1);
         }
 
         [TestMethod]

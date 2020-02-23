@@ -3,11 +3,15 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Options;
 using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
+using System.Text.Json;
 using TaskManager.CustomSettings;
 using TaskManager.Data;
 using TaskManager.DataTransferObjects;
+using TaskManager.ExtensionMethods;
 using TaskManager.Models;
 
 namespace TaskManager.Controllers
@@ -32,22 +36,29 @@ namespace TaskManager.Controllers
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status403Forbidden)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
         [ProducesErrorResponseType(typeof(ErrorResponse))]
-        public ActionResult<TaskResponse> CreateTask([FromBody] TaskWriteRequestPayload taskWriteRequestPayload)
+        public async System.Threading.Tasks.Task<ActionResult<TaskResponse>> CreateTask([FromBody] TaskWriteRequestPayload taskWriteRequestPayload)
         {
             try
             {
                 if (ModelState.IsValid)
                 {
                     // Check to see if the Task already exists
-                    Task task = (from t in _context.Tasks where t.Name == taskWriteRequestPayload.TaskName select t).Single();
+                    Task task = (from t in _context.Tasks where t.Name.Equals(taskWriteRequestPayload.TaskName) select t).SingleOrDefault();
 
                     if (task == null)
                     {
                         using (IDbContextTransaction transaction = _context.Database.BeginTransaction())
                         {
-                            if (canAddMoreTasks())
+                            if (!canAddMoreTasks())
                             {
-                                return StatusCode((int)HttpStatusCode.Forbidden, $"Task limit reach MaxTasks: [{_taskLimits.MaxTaskEntries}]");
+
+                                return StatusCode((int)HttpStatusCode.Forbidden, new ErrorResponse()
+                                {
+                                    ErrorNumber = 4,
+                                    ErrorDescription = "The maximum number of entities have been created. No further entities can be created at this time.",
+                                    ParameterName = null,
+                                    ParameterValue = null,
+                                });
                             }
 
                             task = new Task()
@@ -72,20 +83,47 @@ namespace TaskManager.Controllers
                                 IsCompleted = task.IsCompleted,
                             };
 
-                            return response;
+                            return StatusCode((int)HttpStatusCode.Created, response);
                         }
                     }
                     else
                     {
-                        return BadRequest(ModelState);
+                        return StatusCode((int) HttpStatusCode.BadRequest, new ErrorResponse()
+                        {
+                            ErrorNumber = 1,
+                            ErrorDescription = "The entity already exists",
+                            ParameterName = "TaskName",
+                            ParameterValue = taskWriteRequestPayload.TaskName,
+                        });
                     }
                 }
-            } catch (System.Exception e)
+                else
+                {
+                    List<ErrorResponse> errorResponses = new List<ErrorResponse>();
+
+                    foreach (string key in ModelState.Keys)
+                    {
+                        if (ModelState[key].ValidationState == Microsoft.AspNetCore.Mvc.ModelBinding.ModelValidationState.Invalid)
+                        {
+                            foreach (Microsoft.AspNetCore.Mvc.ModelBinding.ModelError error in ModelState[key].Errors)
+                            {
+                                string cleansedKey = key.CleanseModelStateKey();
+
+                                ErrorResponse errorResponse = new ErrorResponse();
+                                (errorResponse.ErrorDescription, errorResponse.ErrorNumber) = ErrorResponse.GetErrorMessage(error.ErrorMessage);
+                                errorResponse.ParameterName = cleansedKey;
+                                errorResponse.ParameterValue = (string)typeof(TaskWriteRequestPayload).GetProperty(cleansedKey).GetValue(taskWriteRequestPayload);
+                                errorResponses.Add(errorResponse);
+                            }
+                        }
+                    }
+
+                    return StatusCode((int)HttpStatusCode.BadRequest, errorResponses);
+                }
+            } catch (Exception e)
             {
                 return StatusCode((int)HttpStatusCode.InternalServerError);
             }
-
-            return NoContent();
         }
 
         [HttpPatch("{id}")]
@@ -97,7 +135,30 @@ namespace TaskManager.Controllers
         [ProducesErrorResponseType(typeof(ErrorResponse))]
         public ActionResult UpdateTask([FromRoute] int id, [FromBody] TaskWriteRequestPayload taskWriteRequestPayload)
         {
-            return NotFound();
+            try
+            {
+                if (ModelState.IsValid)
+                {
+                    Task task = (from t in _context.Tasks where t.Id == id select t).SingleOrDefault();
+
+                    if (task == null)
+                    {
+                        return NotFound();
+                    }
+
+                    task.Name = taskWriteRequestPayload.TaskName;
+                    task.DueDate = Convert.ToDateTime(taskWriteRequestPayload.DueDate);
+                    task.IsCompleted = taskWriteRequestPayload.IsCompleted;
+
+                    _context.SaveChanges();
+                }
+            }
+            catch (Exception e)
+            {
+                return StatusCode((int)HttpStatusCode.InternalServerError);
+            }
+
+            return NoContent();
         }
 
         [HttpDelete("{id}")]
@@ -109,7 +170,7 @@ namespace TaskManager.Controllers
         {
             try
             {
-                Task task = (from t in _context.Tasks where t.Id == id select t).Single();
+                Task task = (from t in _context.Tasks where t.Id == id select t).SingleOrDefault();
 
                 if (task == null)
                 {
@@ -135,7 +196,7 @@ namespace TaskManager.Controllers
         {
             try
             {
-                Task task = (from t in _context.Tasks where t.Id == id select t).Single();
+                Task task = (from t in _context.Tasks where t.Id == id select t).SingleOrDefault();
 
                 if (task == null)
                 {
