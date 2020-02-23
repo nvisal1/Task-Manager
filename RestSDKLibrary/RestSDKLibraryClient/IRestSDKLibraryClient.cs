@@ -49,13 +49,17 @@ namespace RestSDKLibrary
         /// </param>
         Task<HttpOperationResponse<object>> CreateTaskWithHttpMessagesAsync(TaskWriteRequestPayload body = default(TaskWriteRequestPayload), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
 
+        /// <param name='orderByDate'>
+        /// </param>
+        /// <param name='taskStatus'>
+        /// </param>
         /// <param name='customHeaders'>
         /// The headers that will be added to request.
         /// </param>
         /// <param name='cancellationToken'>
         /// The cancellation token.
         /// </param>
-        Task<HttpOperationResponse<object>> GetAllTasksWithHttpMessagesAsync(Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<HttpOperationResponse<object>> GetAllTasksWithHttpMessagesAsync(string orderByDate = default(string), string taskStatus = default(string), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <param name='id'>
         /// </param>

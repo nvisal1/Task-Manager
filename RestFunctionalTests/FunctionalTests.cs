@@ -3,6 +3,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using RestSDKLibrary;
 using RestSDKLibrary.Models;
 using System;
+using System.Collections.Generic;
 using System.Net;
 
 namespace RestFunctionalTests
@@ -501,6 +502,75 @@ namespace RestFunctionalTests
             Assert.IsTrue(updateResponse.ErrorDescription.Equals("The entity could not be found"));
             Assert.IsTrue(updateResponse.ParameterName.Equals("TaskName"));
             Assert.IsTrue(updateResponse.ParameterValue.Equals(updatePayload.TaskName));
+        }
+
+        [TestMethod]
+        public void VerifySuccessfulTaskDeletion()
+        {
+            TaskWriteRequestPayload payload = new TaskWriteRequestPayload()
+            {
+                TaskName = "Valid Task Name",
+                IsCompleted = false,
+                DueDate = "2012-04-23",
+            };
+
+            TaskResponse createResponse = (TaskResponse)client.CreateTask(body: payload);
+
+            ErrorResponse deleteResponse = client.DeleteTask((int)createResponse.Id);
+
+            Assert.IsNull(deleteResponse);
+        }
+
+        [TestMethod]
+        public void VerifyNotFoundTaskDeletion()
+        {
+            ErrorResponse deleteResponse = client.DeleteTask(15);
+
+            Assert.AreEqual(deleteResponse.ErrorNumber, 5);
+            Assert.IsTrue(deleteResponse.ErrorDescription.Equals("The entity could not be found"));
+            Assert.IsTrue(deleteResponse.ParameterName.Equals("Id"));
+            Assert.IsTrue(deleteResponse.ParameterValue.Equals("15"));
+        }
+
+        [TestMethod]
+        public void VerifySuccessfulTaskReadById()
+        {
+            TaskWriteRequestPayload payload = new TaskWriteRequestPayload()
+            {
+                TaskName = "Valid Task Name",
+                IsCompleted = false,
+                DueDate = "2012-04-23",
+            };
+
+            TaskResponse createResponse = (TaskResponse)client.CreateTask(body: payload);
+
+            TaskResponse readResponse = (TaskResponse)client.GetTask((int)createResponse.Id);
+
+            client.DeleteTask((int)createResponse.Id);
+
+            Assert.AreEqual(readResponse.Id, createResponse.Id);
+            Assert.AreEqual(readResponse.TaskName, createResponse.TaskName);
+            Assert.AreEqual(readResponse.IsCompleted,  createResponse.IsCompleted);
+            Assert.IsTrue(readResponse.DueDate.Equals(createResponse.DueDate));
+        }
+
+        [TestMethod]
+        public void VerifyNotFoundTaskReadById()
+        {
+            ErrorResponse readResponse = (ErrorResponse)client.GetTask(15);
+
+            Assert.AreEqual(readResponse.ErrorNumber, 5);
+            Assert.IsTrue(readResponse.ErrorDescription.Equals("The entity could not be found"));
+            Assert.IsTrue(readResponse.ParameterName.Equals("Id"));
+            Assert.IsTrue(readResponse.ParameterValue.Equals("15"));
+        }
+
+        [TestMethod]
+        public void VerifySuccessfulReadAllTasks()
+        {
+            List<TaskResponse> response = (List<TaskResponse>)client.GetAllTasks();
+
+            Assert.AreEqual(response.Count, 5);
         }
 
 

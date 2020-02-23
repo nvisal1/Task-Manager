@@ -266,6 +266,10 @@ namespace RestSDKLibrary
         /// </return>
         public async Task<HttpOperationResponse<object>> CreateTaskWithHttpMessagesAsync(TaskWriteRequestPayload body = default(TaskWriteRequestPayload), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
         {
+            if (body != null)
+            {
+                body.Validate();
+            }
             // Tracing
             bool _shouldTrace = ServiceClientTracing.IsEnabled;
             string _invocationId = null;
@@ -426,6 +430,10 @@ namespace RestSDKLibrary
             return _result;
         }
 
+        /// <param name='orderByDate'>
+        /// </param>
+        /// <param name='taskStatus'>
+        /// </param>
         /// <param name='customHeaders'>
         /// Headers that will be added to request.
         /// </param>
@@ -435,7 +443,7 @@ namespace RestSDKLibrary
         /// <return>
         /// A response object containing the response body and response headers.
         /// </return>
-        public async Task<HttpOperationResponse<object>> GetAllTasksWithHttpMessagesAsync(Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<HttpOperationResponse<object>> GetAllTasksWithHttpMessagesAsync(string orderByDate = default(string), string taskStatus = default(string), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
         {
             // Tracing
             bool _shouldTrace = ServiceClientTracing.IsEnabled;
@@ -444,12 +452,27 @@ namespace RestSDKLibrary
             {
                 _invocationId = ServiceClientTracing.NextInvocationId.ToString();
                 Dictionary<string, object> tracingParameters = new Dictionary<string, object>();
+                tracingParameters.Add("orderByDate", orderByDate);
+                tracingParameters.Add("taskStatus", taskStatus);
                 tracingParameters.Add("cancellationToken", cancellationToken);
                 ServiceClientTracing.Enter(_invocationId, this, "GetAllTasks", tracingParameters);
             }
             // Construct URL
             var _baseUrl = this.BaseUri.AbsoluteUri;
             var _url = new Uri(new Uri(_baseUrl + (_baseUrl.EndsWith("/") ? "" : "/")), "tasks").ToString();
+            List<string> _queryParameters = new List<string>();
+            if (orderByDate != null)
+            {
+                _queryParameters.Add(string.Format("orderByDate={0}", Uri.EscapeDataString(orderByDate)));
+            }
+            if (taskStatus != null)
+            {
+                _queryParameters.Add(string.Format("taskStatus={0}", Uri.EscapeDataString(taskStatus)));
+            }
+            if (_queryParameters.Count > 0)
+            {
+                _url += "?" + string.Join("&", _queryParameters);
+            }
             // Create HTTP transport objects
             HttpRequestMessage _httpRequest = new HttpRequestMessage();
             HttpResponseMessage _httpResponse = null;

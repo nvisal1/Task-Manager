@@ -4,10 +4,8 @@ using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Net;
-using System.Text.Json;
 using TaskManager.CustomSettings;
 using TaskManager.Data;
 using TaskManager.DataTransferObjects;
@@ -202,7 +200,13 @@ namespace TaskManager.Controllers
 
                 if (task == null)
                 {
-                    return NotFound();
+                    return StatusCode((int)HttpStatusCode.NotFound, new ErrorResponse()
+                    {
+                        ErrorNumber = 5,
+                        ErrorDescription = "The entity could not be found",
+                        ParameterName = "Id",
+                        ParameterValue = id.ToString(),
+                    });
                 }
 
                 _context.Tasks.Remove(task);
@@ -212,7 +216,7 @@ namespace TaskManager.Controllers
                 return StatusCode((int)HttpStatusCode.InternalServerError);
             }
 
-            return NoContent();
+            return StatusCode((int)HttpStatusCode.NoContent);
         }
 
         [HttpGet("{id}")]
@@ -228,14 +232,20 @@ namespace TaskManager.Controllers
 
                 if (task == null)
                 {
-                    return NotFound();
+                    return StatusCode((int)HttpStatusCode.NotFound, new ErrorResponse()
+                    {
+                        ErrorNumber = 5,
+                        ErrorDescription = "The entity could not be found",
+                        ParameterName = "Id",
+                        ParameterValue = id.ToString(),
+                    });
                 }
 
                 return new TaskResponse()
                 {
                     Id = (int)task.Id,
                     TaskName = task.Name,
-                    DueDate = task.DueDate.ToString(),
+                    DueDate = task.DueDate.ToString("yyyy-MM-dd"),
                     IsCompleted = task.IsCompleted,
                 };
 
@@ -250,19 +260,163 @@ namespace TaskManager.Controllers
         [ProducesResponseType(typeof(TaskResponse[]), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
         [ProducesErrorResponseType(typeof(ErrorResponse))]
-        public ActionResult<TaskResponse[]> GetAllTasks()
+        public ActionResult<List<TaskResponse>> GetAllTasks([FromQuery] string orderByDate = null, [FromQuery] string taskStatus = null)
         {
             try
             {
-                TaskResponse[] tasks = (from t in _context.Tasks 
-                                select new TaskResponse()
-                                {
-                                    Id = (int)t.Id,
-                                    TaskName = t.Name,
-                                    DueDate = t.DueDate.ToString(),
-                                    IsCompleted = t.IsCompleted,
-                                })
-                                .ToArray();
+                List<TaskResponse> tasks;
+
+                if (orderByDate.Equals("Asc") && taskStatus.Equals("Completed"))
+                {
+                    tasks = (from t in _context.Tasks
+                             orderby t.DueDate ascending
+                             where t.IsCompleted == true
+                             select new TaskResponse()
+                             {
+                                 Id = (int)t.Id,
+                                 TaskName = t.Name,
+                                 DueDate = t.DueDate.ToString(),
+                                 IsCompleted = t.IsCompleted,
+                             })
+                             .ToList();
+                }
+                else if (orderByDate.Equals("Asc") && taskStatus.Equals("NotCompleted"))
+                {
+                    tasks = (from t in _context.Tasks
+                             orderby t.DueDate ascending
+                             where t.IsCompleted == false
+                             select new TaskResponse()
+                             {
+                                 Id = (int)t.Id,
+                                 TaskName = t.Name,
+                                 DueDate = t.DueDate.ToString(),
+                                 IsCompleted = t.IsCompleted,
+                             })
+                             .ToList();
+                }
+                else if (orderByDate.Equals("Asc") && taskStatus.Equals("All"))
+                {
+                    tasks = (from t in _context.Tasks
+                             orderby t.DueDate ascending
+                             select new TaskResponse()
+                             {
+                                 Id = (int)t.Id,
+                                 TaskName = t.Name,
+                                 DueDate = t.DueDate.ToString(),
+                                 IsCompleted = t.IsCompleted,
+                             })
+                             .ToList();
+                }
+                else if (orderByDate.Equals("Desc") && taskStatus.Equals("Completed"))
+                {
+                    tasks = (from t in _context.Tasks
+                             orderby t.DueDate descending
+                             where t.IsCompleted == true
+                             select new TaskResponse()
+                             {
+                                 Id = (int)t.Id,
+                                 TaskName = t.Name,
+                                 DueDate = t.DueDate.ToString(),
+                                 IsCompleted = t.IsCompleted,
+                             })
+                             .ToList();
+                }
+                else if (orderByDate.Equals("Desc") && taskStatus.Equals("NotCompleted"))
+                {
+                    tasks = (from t in _context.Tasks
+                             orderby t.DueDate descending
+                             where t.IsCompleted == false
+                             select new TaskResponse()
+                             {
+                                 Id = (int)t.Id,
+                                 TaskName = t.Name,
+                                 DueDate = t.DueDate.ToString(),
+                                 IsCompleted = t.IsCompleted,
+                             })
+                             .ToList();
+                }
+                else if (orderByDate.Equals("Desc") && taskStatus.Equals("All"))
+                {
+                    tasks = (from t in _context.Tasks
+                             orderby t.DueDate descending
+                             select new TaskResponse()
+                             {
+                                 Id = (int)t.Id,
+                                 TaskName = t.Name,
+                                 DueDate = t.DueDate.ToString(),
+                                 IsCompleted = t.IsCompleted,
+                             })
+                             .ToList();
+                }
+                else if (orderByDate.Equals("Asc") && taskStatus == null)
+                {
+                    tasks = (from t in _context.Tasks
+                             orderby t.DueDate ascending
+                             select new TaskResponse()
+                             {
+                                 Id = (int)t.Id,
+                                 TaskName = t.Name,
+                                 DueDate = t.DueDate.ToString(),
+                                 IsCompleted = t.IsCompleted,
+                             })
+                             .ToList();
+                }
+                else if (orderByDate.Equals("Desc") && taskStatus == null)
+                {
+                    tasks = (from t in _context.Tasks
+                             orderby t.DueDate descending
+                             select new TaskResponse()
+                             {
+                                 Id = (int)t.Id,
+                                 TaskName = t.Name,
+                                 DueDate = t.DueDate.ToString(),
+                                 IsCompleted = t.IsCompleted,
+                             })
+                             .ToList();
+                }
+                else if (orderByDate == null && taskStatus.Equals("Completed"))
+                {
+                    tasks = (from t in _context.Tasks
+                             orderby t.DueDate ascending
+                             where t.IsCompleted == true
+                             select new TaskResponse()
+                             {
+                                 Id = (int)t.Id,
+                                 TaskName = t.Name,
+                                 DueDate = t.DueDate.ToString(),
+                                 IsCompleted = t.IsCompleted,
+                             })
+                             .ToList();
+                }
+                else if (orderByDate == null && taskStatus.Equals("NotCompleted"))
+                {
+                    tasks = (from t in _context.Tasks
+                             where t.IsCompleted == false
+                             orderby t.DueDate ascending
+                             select new TaskResponse()
+                             {
+                                 Id = (int)t.Id,
+                                 TaskName = t.Name,
+                                 DueDate = t.DueDate.ToString(),
+                                 IsCompleted = t.IsCompleted,
+                             })
+                             .ToList();
+                } 
+                else
+                {
+                    tasks = (from t in _context.Tasks
+                             orderby t.DueDate ascending
+                             select new TaskResponse()
+                             {
+                                 Id = (int)t.Id,
+                                 TaskName = t.Name,
+                                 DueDate = t.DueDate.ToString(),
+                                 IsCompleted = t.IsCompleted,
+                             })
+                             .ToList();
+                }
+
+
 
                 return tasks;
 

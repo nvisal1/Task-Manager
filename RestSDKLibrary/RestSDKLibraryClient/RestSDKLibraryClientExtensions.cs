@@ -46,20 +46,28 @@ namespace RestSDKLibrary
             /// <param name='operations'>
             /// The operations group for this extension method.
             /// </param>
-            public static object GetAllTasks(this IRestSDKLibraryClient operations)
+            /// <param name='orderByDate'>
+            /// </param>
+            /// <param name='taskStatus'>
+            /// </param>
+            public static object GetAllTasks(this IRestSDKLibraryClient operations, string orderByDate = default(string), string taskStatus = default(string))
             {
-                return Task.Factory.StartNew(s => ((IRestSDKLibraryClient)s).GetAllTasksAsync(), operations, CancellationToken.None, TaskCreationOptions.None, TaskScheduler.Default).Unwrap().GetAwaiter().GetResult();
+                return Task.Factory.StartNew(s => ((IRestSDKLibraryClient)s).GetAllTasksAsync(orderByDate, taskStatus), operations, CancellationToken.None, TaskCreationOptions.None, TaskScheduler.Default).Unwrap().GetAwaiter().GetResult();
             }
 
             /// <param name='operations'>
             /// The operations group for this extension method.
             /// </param>
+            /// <param name='orderByDate'>
+            /// </param>
+            /// <param name='taskStatus'>
+            /// </param>
             /// <param name='cancellationToken'>
             /// The cancellation token.
             /// </param>
-            public static async Task<object> GetAllTasksAsync(this IRestSDKLibraryClient operations, CancellationToken cancellationToken = default(CancellationToken))
+            public static async Task<object> GetAllTasksAsync(this IRestSDKLibraryClient operations, string orderByDate = default(string), string taskStatus = default(string), CancellationToken cancellationToken = default(CancellationToken))
             {
-                using (var _result = await operations.GetAllTasksWithHttpMessagesAsync(null, cancellationToken).ConfigureAwait(false))
+                using (var _result = await operations.GetAllTasksWithHttpMessagesAsync(orderByDate, taskStatus, null, cancellationToken).ConfigureAwait(false))
                 {
                     return _result.Body;
                 }
