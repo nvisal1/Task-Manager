@@ -260,11 +260,11 @@ namespace TaskManager.Controllers
         [ProducesResponseType(typeof(TaskResponse[]), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
         [ProducesErrorResponseType(typeof(ErrorResponse))]
-        public ActionResult<List<TaskResponse>> GetAllTasks([FromQuery] string orderByDate = null, [FromQuery] string taskStatus = null)
+        public ActionResult<List<TaskResponse>> GetAllTasks([FromQuery] string orderByDate = "", [FromQuery] string taskStatus = "")
         {
             try
             {
-                List<TaskResponse> tasks;
+                List<TaskResponse> tasks = new List<TaskResponse>{};
 
                 if (orderByDate.Equals("Asc") && taskStatus.Equals("Completed"))
                 {
@@ -348,7 +348,7 @@ namespace TaskManager.Controllers
                              })
                              .ToList();
                 }
-                else if (orderByDate.Equals("Asc") && taskStatus == null)
+                else if (orderByDate.Equals("Asc") && taskStatus.Equals(""))
                 {
                     tasks = (from t in _context.Tasks
                              orderby t.DueDate ascending
@@ -361,7 +361,7 @@ namespace TaskManager.Controllers
                              })
                              .ToList();
                 }
-                else if (orderByDate.Equals("Desc") && taskStatus == null)
+                else if (orderByDate.Equals("Desc") && taskStatus.Equals(""))
                 {
                     tasks = (from t in _context.Tasks
                              orderby t.DueDate descending
@@ -374,7 +374,7 @@ namespace TaskManager.Controllers
                              })
                              .ToList();
                 }
-                else if (orderByDate == null && taskStatus.Equals("Completed"))
+                else if (orderByDate.Equals("") && taskStatus.Equals("Completed"))
                 {
                     tasks = (from t in _context.Tasks
                              orderby t.DueDate ascending
@@ -388,7 +388,7 @@ namespace TaskManager.Controllers
                              })
                              .ToList();
                 }
-                else if (orderByDate == null && taskStatus.Equals("NotCompleted"))
+                else if (orderByDate.Equals("") && taskStatus.Equals("NotCompleted"))
                 {
                     tasks = (from t in _context.Tasks
                              where t.IsCompleted == false

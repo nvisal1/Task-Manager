@@ -266,10 +266,6 @@ namespace RestSDKLibrary
         /// </return>
         public async Task<HttpOperationResponse<object>> CreateTaskWithHttpMessagesAsync(TaskWriteRequestPayload body = default(TaskWriteRequestPayload), Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
         {
-            if (body != null)
-            {
-                body.Validate();
-            }
             // Tracing
             bool _shouldTrace = ServiceClientTracing.IsEnabled;
             string _invocationId = null;
