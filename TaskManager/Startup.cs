@@ -1,8 +1,6 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,6 +12,8 @@ using System.IO;
 using System.Reflection;
 using TaskManager.CustomSettings;
 using TaskManager.Data;
+using TaskManager.Interfaces;
+using TaskManager.Services;
 
 namespace TaskManager
 {
@@ -38,15 +38,10 @@ namespace TaskManager
             });
 
             services.AddDbContext<AppDbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+            services.AddScoped<ITaskService, TaskService>();
 
             services.AddOptions();
             services.Configure<TaskLimits>(Configuration.GetSection(nameof(TaskLimits)));
-
-            // In production, the React files will be served from this directory
-            services.AddSpaStaticFiles(configuration =>
-            {
-                configuration.RootPath = "ClientApp/build";
-            });
 
             services.AddSwaggerGen(c =>
             {
@@ -96,7 +91,6 @@ namespace TaskManager
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
-            app.UseSpaStaticFiles();
 
             app.UseRouting();
 
@@ -105,16 +99,6 @@ namespace TaskManager
                 endpoints.MapControllerRoute(
                     name: "default",
                     pattern: "{controller}/{action=Index}/{id?}");
-            });
-
-            app.UseSpa(spa =>
-            {
-                spa.Options.SourcePath = "ClientApp";
-
-                if (env.IsDevelopment())
-                {
-                    spa.UseReactDevelopmentServer(npmScript: "start");
-                }
             });
         }
     }

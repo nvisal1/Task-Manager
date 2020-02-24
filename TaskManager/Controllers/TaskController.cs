@@ -1,15 +1,13 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using TaskManager.CustomSettings;
-using TaskManager.Data;
 using TaskManager.DataTransferObjects;
 using TaskManager.ExtensionMethods;
+using TaskManager.Interfaces;
 using TaskManager.Models;
 
 namespace TaskManager.Controllers
@@ -18,12 +16,12 @@ namespace TaskManager.Controllers
     [Route("tasks")]
     public class TaskController : ControllerBase
     {
-        private readonly AppDbContext _context;
+        private readonly ITaskService _taskSerivce;
         private readonly TaskLimits _taskLimits;
 
-        public TaskController(AppDbContext context, IOptions<TaskLimits> taskLimits)
+        public TaskController(ITaskService taskService, IOptions<TaskLimits> taskLimits)
         {
-            _context = context;
+            _taskSerivce = taskService;
             _taskLimits = taskLimits.Value;
         }
 
@@ -41,60 +39,55 @@ namespace TaskManager.Controllers
                 if (ModelState.IsValid)
                 {
                     // Check to see if the Task already exists
-                    Task task = (from t in _context.Tasks where t.Name.Equals(taskWriteRequestPayload.TaskName) select t).SingleOrDefault();
+                    Task task = _taskSerivce.GetTaskByName(taskWriteRequestPayload.TaskName);
 
                     if (task == null)
                     {
-                        using (IDbContextTransaction transaction = _context.Database.BeginTransaction())
+                        if (!canAddMoreTasks())
                         {
-                            if (!canAddMoreTasks())
+
+                            return StatusCode((int)HttpStatusCode.Forbidden, new ErrorResponse()
                             {
-
-                                return StatusCode((int)HttpStatusCode.Forbidden, new ErrorResponse()
-                                {
-                                    ErrorNumber = 4,
-                                    ErrorDescription = "The maximum number of entities have been created. No further entities can be created at this time.",
-                                    ParameterName = null,
-                                    ParameterValue = null,
-                                });
-                            }
-
-
-                            if (!DateTime.TryParse(taskWriteRequestPayload.DueDate, out DateTime expectedDate))
-                            {
-                                return StatusCode((int)HttpStatusCode.Forbidden, new ErrorResponse()
-                                {
-                                    ErrorNumber = 7,
-                                    ErrorDescription = "The parameter value is not valid",
-                                    ParameterName = "DueDate",
-                                    ParameterValue = taskWriteRequestPayload.DueDate,
-                                });
-                            }
-
-                            task = new Task()
-                            {
-                                Name = taskWriteRequestPayload.TaskName,
-                                DueDate = Convert.ToDateTime(taskWriteRequestPayload.DueDate),
-                                IsCompleted = (bool)taskWriteRequestPayload.IsCompleted,
-                            };
-
-                            _context.Tasks.Add(task);
-                            _context.SaveChanges();
-
-                            transaction.Commit();
-
-                            task = (from t in _context.Tasks where t.Name == taskWriteRequestPayload.TaskName select t).Single();
-
-                            TaskResponse response = new TaskResponse()
-                            {
-                                Id = (int)task.Id,
-                                TaskName = task.Name,
-                                DueDate = taskWriteRequestPayload.DueDate,
-                                IsCompleted = task.IsCompleted,
-                            };
-
-                            return StatusCode((int)HttpStatusCode.Created, response);
+                                ErrorNumber = 4,
+                                ErrorDescription = "The maximum number of entities have been created. No further entities can be created at this time.",
+                                ParameterName = null,
+                                ParameterValue = null,
+                            });
                         }
+
+                        if (!DateTime.TryParse(taskWriteRequestPayload.DueDate, out DateTime expectedDate))
+                        {
+                            return StatusCode((int)HttpStatusCode.Forbidden, new ErrorResponse()
+                            {
+                                ErrorNumber = 7,
+                                ErrorDescription = "The parameter value is not valid",
+                                ParameterName = "DueDate",
+                                ParameterValue = taskWriteRequestPayload.DueDate,
+                            });
+                        }
+
+                        task = new Task()
+                        {
+                            Name = taskWriteRequestPayload.TaskName,
+                            DueDate = Convert.ToDateTime(taskWriteRequestPayload.DueDate),
+                            IsCompleted = (bool)taskWriteRequestPayload.IsCompleted,
+                        };
+
+                        _taskSerivce.CreateTask(task);
+
+                        // Get the created task in order to get the generated id
+                        task = _taskSerivce.GetTaskByName(task.Name);
+
+                        TaskResponse response = new TaskResponse()
+                        {
+                            Id = (int)task.Id,
+                            TaskName = task.Name,
+                            DueDate = taskWriteRequestPayload.DueDate,
+                            IsCompleted = task.IsCompleted,
+                        };
+
+                        return StatusCode((int)HttpStatusCode.Created, response);
+                        
                     }
                     else
                     {
@@ -137,7 +130,7 @@ namespace TaskManager.Controllers
             {
                 if (ModelState.IsValid)
                 {
-                    Task task = (from t in _context.Tasks where t.Id == id select t).SingleOrDefault();
+                    Task task = _taskSerivce.GetTaskById(id);
 
                     if (task == null)
                     {
@@ -161,11 +154,7 @@ namespace TaskManager.Controllers
                         });
                     }
 
-                    task.Name = taskWriteRequestPayload.TaskName;
-                    task.DueDate = Convert.ToDateTime(taskWriteRequestPayload.DueDate);
-                    task.IsCompleted = (bool)taskWriteRequestPayload.IsCompleted;
-
-                    _context.SaveChanges();
+                    _taskSerivce.UpdateTask(taskWriteRequestPayload.TaskName, taskWriteRequestPayload.DueDate, (bool)taskWriteRequestPayload.IsCompleted, task);
                 }
                 else
                 {
@@ -196,7 +185,7 @@ namespace TaskManager.Controllers
         {
             try
             {
-                Task task = (from t in _context.Tasks where t.Id == id select t).SingleOrDefault();
+                Task task = _taskSerivce.GetTaskById(id);
 
                 if (task == null)
                 {
@@ -209,8 +198,7 @@ namespace TaskManager.Controllers
                     });
                 }
 
-                _context.Tasks.Remove(task);
-                _context.SaveChanges();
+                _taskSerivce.DeleteTask(task);
             } catch (Exception e)
             {
                 return StatusCode((int)HttpStatusCode.InternalServerError);
@@ -228,7 +216,7 @@ namespace TaskManager.Controllers
         {
             try
             {
-                Task task = (from t in _context.Tasks where t.Id == id select t).SingleOrDefault();
+                Task task = _taskSerivce.GetTaskById(id);
 
                 if (task == null)
                 {
@@ -264,7 +252,7 @@ namespace TaskManager.Controllers
         {
             try
             {
-                List<TaskResponse> tasks = new List<TaskResponse>{};
+                List<Task> tasks = new List<Task>{};
 
                 if (!(orderByDate.Equals("") || orderByDate.Equals("Asc") || orderByDate.Equals("Desc")))
                 {
@@ -288,159 +276,17 @@ namespace TaskManager.Controllers
                     });
                 }
 
-                if (orderByDate.Equals("Asc") && taskStatus.Equals("Completed"))
+                tasks = _taskSerivce.GetAllTasks(taskStatus, orderByDate);
+
+                List<TaskResponse> taskResponses = new List<TaskResponse>();
+
+                foreach (Task task in tasks)
                 {
-                    tasks = (from t in _context.Tasks
-                             orderby t.DueDate ascending
-                             where t.IsCompleted == true
-                             select new TaskResponse()
-                             {
-                                 Id = (int)t.Id,
-                                 TaskName = t.Name,
-                                 DueDate = t.DueDate.ToString(),
-                                 IsCompleted = t.IsCompleted,
-                             })
-                             .ToList();
-                }
-                else if (orderByDate.Equals("Asc") && taskStatus.Equals("NotCompleted"))
-                {
-                    tasks = (from t in _context.Tasks
-                             orderby t.DueDate ascending
-                             where t.IsCompleted == false
-                             select new TaskResponse()
-                             {
-                                 Id = (int)t.Id,
-                                 TaskName = t.Name,
-                                 DueDate = t.DueDate.ToString(),
-                                 IsCompleted = t.IsCompleted,
-                             })
-                             .ToList();
-                }
-                else if (orderByDate.Equals("Asc") && taskStatus.Equals("All"))
-                {
-                    tasks = (from t in _context.Tasks
-                             orderby t.DueDate ascending
-                             select new TaskResponse()
-                             {
-                                 Id = (int)t.Id,
-                                 TaskName = t.Name,
-                                 DueDate = t.DueDate.ToString(),
-                                 IsCompleted = t.IsCompleted,
-                             })
-                             .ToList();
-                }
-                else if (orderByDate.Equals("Desc") && taskStatus.Equals("Completed"))
-                {
-                    tasks = (from t in _context.Tasks
-                             orderby t.DueDate descending
-                             where t.IsCompleted == true
-                             select new TaskResponse()
-                             {
-                                 Id = (int)t.Id,
-                                 TaskName = t.Name,
-                                 DueDate = t.DueDate.ToString(),
-                                 IsCompleted = t.IsCompleted,
-                             })
-                             .ToList();
-                }
-                else if (orderByDate.Equals("Desc") && taskStatus.Equals("NotCompleted"))
-                {
-                    tasks = (from t in _context.Tasks
-                             orderby t.DueDate descending
-                             where t.IsCompleted == false
-                             select new TaskResponse()
-                             {
-                                 Id = (int)t.Id,
-                                 TaskName = t.Name,
-                                 DueDate = t.DueDate.ToString(),
-                                 IsCompleted = t.IsCompleted,
-                             })
-                             .ToList();
-                }
-                else if (orderByDate.Equals("Desc") && taskStatus.Equals("All"))
-                {
-                    tasks = (from t in _context.Tasks
-                             orderby t.DueDate descending
-                             select new TaskResponse()
-                             {
-                                 Id = (int)t.Id,
-                                 TaskName = t.Name,
-                                 DueDate = t.DueDate.ToString(),
-                                 IsCompleted = t.IsCompleted,
-                             })
-                             .ToList();
-                }
-                else if (orderByDate.Equals("Asc") && taskStatus.Equals(""))
-                {
-                    tasks = (from t in _context.Tasks
-                             orderby t.DueDate ascending
-                             select new TaskResponse()
-                             {
-                                 Id = (int)t.Id,
-                                 TaskName = t.Name,
-                                 DueDate = t.DueDate.ToString(),
-                                 IsCompleted = t.IsCompleted,
-                             })
-                             .ToList();
-                }
-                else if (orderByDate.Equals("Desc") && taskStatus.Equals(""))
-                {
-                    tasks = (from t in _context.Tasks
-                             orderby t.DueDate descending
-                             select new TaskResponse()
-                             {
-                                 Id = (int)t.Id,
-                                 TaskName = t.Name,
-                                 DueDate = t.DueDate.ToString(),
-                                 IsCompleted = t.IsCompleted,
-                             })
-                             .ToList();
-                }
-                else if (orderByDate.Equals("") && taskStatus.Equals("Completed"))
-                {
-                    tasks = (from t in _context.Tasks
-                             orderby t.DueDate ascending
-                             where t.IsCompleted == true
-                             select new TaskResponse()
-                             {
-                                 Id = (int)t.Id,
-                                 TaskName = t.Name,
-                                 DueDate = t.DueDate.ToString(),
-                                 IsCompleted = t.IsCompleted,
-                             })
-                             .ToList();
-                }
-                else if (orderByDate.Equals("") && taskStatus.Equals("NotCompleted"))
-                {
-                    tasks = (from t in _context.Tasks
-                             where t.IsCompleted == false
-                             orderby t.DueDate ascending
-                             select new TaskResponse()
-                             {
-                                 Id = (int)t.Id,
-                                 TaskName = t.Name,
-                                 DueDate = t.DueDate.ToString(),
-                                 IsCompleted = t.IsCompleted,
-                             })
-                             .ToList();
-                } 
-                else
-                {
-                    tasks = (from t in _context.Tasks
-                             orderby t.DueDate ascending
-                             select new TaskResponse()
-                             {
-                                 Id = (int)t.Id,
-                                 TaskName = t.Name,
-                                 DueDate = t.DueDate.ToString(),
-                                 IsCompleted = t.IsCompleted,
-                             })
-                             .ToList();
+                    TaskResponse taskReponse = MapTaskToTaskResponse(task);
+                    taskResponses.Add(taskReponse);
                 }
 
-
-
-                return tasks;
+                return taskResponses;
 
             }
             catch (Exception e)
@@ -451,9 +297,9 @@ namespace TaskManager.Controllers
 
         private bool canAddMoreTasks()
         {
-            long totalTasks = (from t in _context.Tasks select t).Count();
+            long taskCount = _taskSerivce.GetTotalTaskCount();
 
-            if (_taskLimits.MaxTaskEntries > totalTasks)
+            if (_taskLimits.MaxTaskEntries > taskCount)
             {
                 return true;
             }
@@ -495,6 +341,16 @@ namespace TaskManager.Controllers
             }
 
             return errorResponses;
+        }
+
+        private TaskResponse MapTaskToTaskResponse(Task task)
+        {
+            return new TaskResponse()
+            {
+                TaskName = task.Name,
+                DueDate = task.DueDate.ToString("yyyy-MM-dd"),
+                IsCompleted = task.IsCompleted,
+            };
         }
 
     }

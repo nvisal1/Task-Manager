@@ -4,7 +4,6 @@ using RestSDKLibrary;
 using RestSDKLibrary.Models;
 using System;
 using System.Collections.Generic;
-using System.Net;
 
 namespace RestFunctionalTests
 {
