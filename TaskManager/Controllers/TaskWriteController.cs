@@ -52,7 +52,7 @@ namespace TaskManager.Controllers
                     ErrorResponse alreadyExistsErrorResponse = ErrorResponse.NewErrorResponse(ErrorNumbers.ALREADY_EXISTS, ErrorMessages.ALREADY_EXISTS, "TaskName", taskWriteRequestPayload.TaskName);
                     return StatusCode((int)HttpStatusCode.BadRequest, alreadyExistsErrorResponse);
                 }
-                if (!canAddMoreTasks())
+                if (!CanAddMoreTasks())
                 {
                     ErrorResponse atCapacityErrorResponse = ErrorResponse.NewErrorResponse(ErrorNumbers.AT_CAPACITY, ErrorMessages.AT_CAPACITY, null, null);
                     return StatusCode((int)HttpStatusCode.Forbidden, atCapacityErrorResponse);
@@ -73,7 +73,8 @@ namespace TaskManager.Controllers
                 TaskResponse response = Mapper.MapTaskToTaskResponse(task);
                 return StatusCode((int)HttpStatusCode.Created, response);
                       
-            } catch (Exception e)
+            } 
+            catch (Exception e)
             {
                 var errorResponse = ValidateModelState(taskWriteRequestPayload);
                 if (errorResponse != null)
@@ -96,46 +97,34 @@ namespace TaskManager.Controllers
         {
             try
             {
-                if (ModelState.IsValid)
+                var errorResponse = ValidateModelState(taskWriteRequestPayload);
+                if (errorResponse != null)
                 {
-                    Task task = _taskSerivce.GetTaskById(id);
-
-                    if (task == null)
-                    {
-                        return StatusCode((int)HttpStatusCode.NotFound, new ErrorResponse()
-                        {
-                            ErrorNumber = 5,
-                            ErrorDescription = "The entity could not be found",
-                            ParameterName = "TaskName",
-                            ParameterValue = taskWriteRequestPayload.TaskName,
-                        });
-                    }
-
-                    if (!DateTime.TryParse(taskWriteRequestPayload.DueDate, out DateTime expectedDate))
-                    {
-                        return StatusCode((int)HttpStatusCode.BadRequest, new ErrorResponse()
-                        {
-                            ErrorNumber = 7,
-                            ErrorDescription = "The parameter value is not valid",
-                            ParameterName = "DueDate",
-                            ParameterValue = taskWriteRequestPayload.DueDate,
-                        });
-                    }
-
-                    _taskSerivce.UpdateTask(taskWriteRequestPayload.TaskName, taskWriteRequestPayload.DueDate, (bool)taskWriteRequestPayload.IsCompleted, task);
+                    return StatusCode((int)HttpStatusCode.BadRequest, errorResponse);
                 }
-                else
+
+                Task task = _taskSerivce.GetTaskById(id);
+
+                if (task == null)
                 {
-                    List<ErrorResponse> errorResponses = BuildErrorResponseList(taskWriteRequestPayload);
-                    return StatusCode((int)HttpStatusCode.BadRequest, errorResponses[0]);
+                    ErrorResponse notFoundErrorResponse = ErrorResponse.NewErrorResponse(ErrorNumbers.NOT_FOUND, ErrorMessages.NOT_FOUND, "TaskName", taskWriteRequestPayload.TaskName);
+                    return StatusCode((int)HttpStatusCode.NotFound, notFoundErrorResponse);
                 }
+
+                if (!DateTime.TryParse(taskWriteRequestPayload.DueDate, out DateTime expectedDate))
+                {
+                    ErrorResponse badRequestErrorResponse = ErrorResponse.NewErrorResponse(ErrorNumbers.NOT_VALID, ErrorMessages.NOT_VALID, "DueDate", taskWriteRequestPayload.DueDate);
+                    return StatusCode((int)HttpStatusCode.BadRequest, badRequestErrorResponse);
+                }
+
+                _taskSerivce.UpdateTask(taskWriteRequestPayload.TaskName, taskWriteRequestPayload.DueDate, (bool)taskWriteRequestPayload.IsCompleted, task);
             }
             catch (Exception e)
             {
-                if (!ModelState.IsValid)
+                var errorResponse = ValidateModelState(taskWriteRequestPayload);
+                if (errorResponse != null)
                 {
-                    List<ErrorResponse> errorResponses = BuildErrorResponseList(taskWriteRequestPayload);
-                    return StatusCode((int)HttpStatusCode.BadRequest, errorResponses[0]);
+                    return StatusCode((int)HttpStatusCode.BadRequest, errorResponse);
                 }
 
                 return StatusCode((int)HttpStatusCode.InternalServerError);
@@ -157,13 +146,8 @@ namespace TaskManager.Controllers
 
                 if (task == null)
                 {
-                    return StatusCode((int)HttpStatusCode.NotFound, new ErrorResponse()
-                    {
-                        ErrorNumber = 5,
-                        ErrorDescription = "The entity could not be found",
-                        ParameterName = "Id",
-                        ParameterValue = id.ToString(),
-                    });
+                    ErrorResponse notFoundErrorResponse = ErrorResponse.NewErrorResponse(ErrorNumbers.NOT_FOUND, ErrorMessages.NOT_FOUND, "Id", id.ToString());
+                    return StatusCode((int)HttpStatusCode.NotFound, notFoundErrorResponse);
                 }
 
                 _taskSerivce.DeleteTask(task);
@@ -175,7 +159,7 @@ namespace TaskManager.Controllers
             return StatusCode((int)HttpStatusCode.NoContent);
         }
 
-        private bool canAddMoreTasks()
+        private bool CanAddMoreTasks()
         {
             long taskCount = _taskSerivce.GetTotalTaskCount();
 
@@ -191,47 +175,12 @@ namespace TaskManager.Controllers
         {
             if (!ModelState.IsValid)
             {
-                List<ErrorResponse> errorResponses = BuildErrorResponseList(taskWriteRequestPayload);
-                return errorResponses[0];
+                ErrorResponse errorResponse = Mapper.MapTaskWriteRequestPayloadToErrorResponse(taskWriteRequestPayload, ModelState);
+                   
+                return errorResponse;
             }
 
             return null;
-        }
-
-        private List<ErrorResponse> BuildErrorResponseList(TaskWriteRequestPayload taskWriteRequestPayload)
-        {
-            List<ErrorResponse> errorResponses = new List<ErrorResponse>();
-
-            foreach (string key in ModelState.Keys)
-            {
-                if (ModelState[key].ValidationState == Microsoft.AspNetCore.Mvc.ModelBinding.ModelValidationState.Invalid)
-                {
-                    foreach (Microsoft.AspNetCore.Mvc.ModelBinding.ModelError error in ModelState[key].Errors)
-                    {
-                        string cleansedKey = key.CleanseModelStateKey();
-
-                        try
-                        {
-                            ErrorResponse errorResponse = new ErrorResponse();
-                            (errorResponse.ErrorDescription, errorResponse.ErrorNumber) = ErrorResponse.GetErrorMessage(error.ErrorMessage);
-                            errorResponse.ParameterName = cleansedKey;
-                            errorResponse.ParameterValue = (string)typeof(TaskWriteRequestPayload).GetProperty(cleansedKey).GetValue(taskWriteRequestPayload);
-                            errorResponses.Add(errorResponse);
-                        }
-                        catch (NullReferenceException _)
-                        {
-                            ErrorResponse errorResponse = new ErrorResponse();
-                            (errorResponse.ErrorDescription, errorResponse.ErrorNumber) = ErrorResponse.GetErrorMessage(error.ErrorMessage);
-                            errorResponse.ParameterName = cleansedKey;
-                            errorResponse.ParameterValue = null;
-                            errorResponses.Add(errorResponse);
-                        }
-
-                    }
-                }
-            }
-
-            return errorResponses;
         }
     }
 }
