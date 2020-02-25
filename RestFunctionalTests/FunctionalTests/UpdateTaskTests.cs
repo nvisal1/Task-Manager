@@ -1,7 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using RestSDKLibrary;
 using RestSDKLibrary.Models;
-using System;
 
 namespace RestFunctionalTests
 {

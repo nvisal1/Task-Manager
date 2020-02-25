@@ -2,12 +2,10 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using System;
-using System.Collections.Generic;
 using System.Net;
 using TaskManager.Constants;
 using TaskManager.CustomSettings;
 using TaskManager.DataTransferObjects;
-using TaskManager.ExtensionMethods;
 using TaskManager.Interfaces;
 using TaskManager.Mappers;
 using TaskManager.Models;
@@ -62,7 +60,7 @@ namespace TaskManager.Controllers
                 if (!DateTime.TryParse(taskWriteRequestPayload.DueDate, out DateTime expectedDate))
                 {
                     ErrorResponse notValidErrorResponse = ErrorResponse.NewErrorResponse(ErrorNumbers.NOT_VALID, ErrorMessages.NOT_VALID, "DueDate", taskWriteRequestPayload.DueDate);
-                    return StatusCode((int)HttpStatusCode.Forbidden, notValidErrorResponse);
+                    return StatusCode((int)HttpStatusCode.BadRequest, notValidErrorResponse);
                 }
 
                 task = Mapper.MapTaskWriteRequestPayloadToTask(taskWriteRequestPayload);
@@ -72,8 +70,8 @@ namespace TaskManager.Controllers
                 task = _taskSerivce.GetTaskByName(task.Name);
 
                 TaskResponse response = Mapper.MapTaskToTaskResponse(task);
+                Response.Headers.Add("Location", HttpContext.Request.Host + "/tasks/" + task.Id);
                 return StatusCode((int)HttpStatusCode.Created, response);
-                      
             } 
             catch (Exception e)
             {
