@@ -1,4 +1,6 @@
-﻿namespace TaskManager.DataTransferObjects
+﻿using System;
+
+namespace TaskManager.DataTransferObjects
 {
     public class ErrorResponse
     {
@@ -78,6 +80,22 @@
                         return ($"Raw Error: { encodedErrorDescription }", errorNumber);
                     }
             }
+        }
+
+        internal static ErrorResponse NewErrorResponse(object aT_)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static ErrorResponse NewErrorResponse(int errorNumber, string errorDescription, string parameterName, string parameterValue)
+        {
+            return new ErrorResponse()
+            {
+                ErrorNumber = errorNumber,
+                ErrorDescription = errorDescription,
+                ParameterName = parameterName,
+                ParameterValue = parameterValue,
+            };
         }
 
     }

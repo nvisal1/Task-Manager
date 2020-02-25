@@ -3,7 +3,7 @@ using TaskManager.Data;
 using TaskManager.Interfaces;
 using TaskManager.Models;
 using System.Linq;
-using System.Linq.Dynamic;
+using System.Linq.Dynamic.Core;
 using System;
 
 namespace TaskManager.Services
