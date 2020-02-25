@@ -52,6 +52,7 @@ namespace TaskManager.Controllers
                     ErrorResponse alreadyExistsErrorResponse = ErrorResponse.NewErrorResponse(ErrorNumbers.ALREADY_EXISTS, ErrorMessages.ALREADY_EXISTS, "TaskName", taskWriteRequestPayload.TaskName);
                     return StatusCode((int)HttpStatusCode.BadRequest, alreadyExistsErrorResponse);
                 }
+
                 if (!CanAddMoreTasks())
                 {
                     ErrorResponse atCapacityErrorResponse = ErrorResponse.NewErrorResponse(ErrorNumbers.AT_CAPACITY, ErrorMessages.AT_CAPACITY, null, null);
@@ -176,7 +177,6 @@ namespace TaskManager.Controllers
             if (!ModelState.IsValid)
             {
                 ErrorResponse errorResponse = Mapper.MapTaskWriteRequestPayloadToErrorResponse(taskWriteRequestPayload, ModelState);
-                   
                 return errorResponse;
             }
 
