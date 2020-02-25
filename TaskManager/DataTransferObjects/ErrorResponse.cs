@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace TaskManager.DataTransferObjects
 {
@@ -15,6 +16,7 @@ namespace TaskManager.DataTransferObjects
         /// If the error is not tied to a specified parameter,
         /// then this value can be null
         /// </summary>
+        [MaxLength(1024)]
         public string ParameterName { get; set; }
 
         /// <summary>
@@ -23,12 +25,14 @@ namespace TaskManager.DataTransferObjects
         /// If the error is not tied to a specific parameter,
         /// then this value can be null
         /// </summary>
+        [MaxLength(2048)]
         public string ParameterValue { get; set; }
 
         /// <summary>
         /// A description of the error, not localized,
         /// intended for developer consumption
         /// </summary>
+        [MaxLength(1024)]
         public string ErrorDescription { get; set; }
 
         public static int GetErrorNumberFromDescription(string encodedErrorDescription)

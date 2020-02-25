@@ -48,7 +48,7 @@ namespace TaskManager.Controllers
                 if (task != null)
                 {
                     ErrorResponse alreadyExistsErrorResponse = ErrorResponse.NewErrorResponse(ErrorNumbers.ALREADY_EXISTS, ErrorMessages.ALREADY_EXISTS, "TaskName", taskWriteRequestPayload.TaskName);
-                    return StatusCode((int)HttpStatusCode.BadRequest, alreadyExistsErrorResponse);
+                    return StatusCode((int)HttpStatusCode.Conflict, alreadyExistsErrorResponse);
                 }
 
                 if (!CanAddMoreTasks())
@@ -92,6 +92,7 @@ namespace TaskManager.Controllers
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
         [ProducesErrorResponseType(typeof(ErrorResponse))]
+
         public ActionResult UpdateTask([FromRoute] int id, [FromBody] TaskWriteRequestPayload taskWriteRequestPayload)
         {
             try
