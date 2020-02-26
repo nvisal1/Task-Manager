@@ -263,7 +263,7 @@ namespace RestFunctionalTests
         }
 
         [TestMethod]
-        public void VerifyNotFoundTaskupdate()
+        public void VerifyNotFoundTaskUpdate()
         {
             TaskWriteRequestPayload updatePayload = new TaskWriteRequestPayload()
             {
@@ -276,6 +276,44 @@ namespace RestFunctionalTests
 
             Assert.AreEqual(updateResponse.ErrorNumber, 5);
             Assert.IsTrue(updateResponse.ErrorDescription.Equals("The entity could not be found"));
+            Assert.IsTrue(updateResponse.ParameterName.Equals("TaskName"));
+            Assert.IsTrue(updateResponse.ParameterValue.Equals(updatePayload.TaskName));
+        }
+
+        [TestMethod]
+        public void VerifyAlreadyExistsTaskUpdate()
+        {
+            TaskWriteRequestPayload createPayload = new TaskWriteRequestPayload()
+            {
+                TaskName = "Valid Task Name",
+                IsCompleted = false,
+                DueDate = "2012-04-23",
+            };
+
+            TaskWriteRequestPayload createPayload2 = new TaskWriteRequestPayload()
+            {
+                TaskName = "Valid Task Name update",
+                IsCompleted = false,
+                DueDate = "2012-04-23",
+            };
+
+            TaskResponse creationResponse = (TaskResponse)Constants.ClientConnectionConfig.client.CreateTask(body: createPayload);
+
+            TaskResponse creationResponse2 = (TaskResponse)Constants.ClientConnectionConfig.client.CreateTask(body: createPayload2);
+
+            TaskWriteRequestPayload updatePayload = new TaskWriteRequestPayload()
+            {
+                TaskName = "Valid Task Name update",
+                IsCompleted = false,
+                DueDate = "2000-02-08",
+            };
+
+            ErrorResponse updateResponse = Constants.ClientConnectionConfig.client.UpdateTask((int)creationResponse.Id, updatePayload);
+
+            Constants.ClientConnectionConfig.client.DeleteTask((int)creationResponse.Id);
+
+            Assert.AreEqual(updateResponse.ErrorNumber, 1);
+            Assert.IsTrue(updateResponse.ErrorDescription.Equals("The entity already exists"));
             Assert.IsTrue(updateResponse.ParameterName.Equals("TaskName"));
             Assert.IsTrue(updateResponse.ParameterValue.Equals(updatePayload.TaskName));
         }

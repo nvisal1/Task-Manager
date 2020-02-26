@@ -16,12 +16,12 @@ namespace TaskManager.Controllers
     [Route("tasks")]
     public class TaskWriteController : ControllerBase
     {
-        private readonly ITaskService _taskSerivce;
+        private readonly ITaskService _taskService;
         private readonly TaskLimits _taskLimits;
 
         public TaskWriteController(ITaskService taskService, IOptions<TaskLimits> taskLimits)
         {
-            _taskSerivce = taskService;
+            _taskService = taskService;
             _taskLimits = taskLimits.Value;
         }
 
@@ -43,7 +43,7 @@ namespace TaskManager.Controllers
                 }
 
                 // Check to see if the Task already exists
-                Task task = _taskSerivce.GetTaskByName(taskWriteRequestPayload.TaskName);
+                Task task = _taskService.GetTaskByName(taskWriteRequestPayload.TaskName);
 
                 if (task != null)
                 {
@@ -64,10 +64,10 @@ namespace TaskManager.Controllers
                 }
 
                 task = Mapper.MapTaskWriteRequestPayloadToTask(taskWriteRequestPayload);
-                _taskSerivce.CreateTask(task);
+                _taskService.CreateTask(task);
 
                 // Get the created task in order to get the generated id
-                task = _taskSerivce.GetTaskByName(task.Name);
+                task = _taskService.GetTaskByName(task.Name);
 
                 TaskResponse response = Mapper.MapTaskToTaskResponse(task);
                 Response.Headers.Add("Location", HttpContext.Request.Host + "/tasks/" + task.Id);
@@ -103,7 +103,7 @@ namespace TaskManager.Controllers
                     return StatusCode((int)HttpStatusCode.BadRequest, errorResponse);
                 }
 
-                Task task = _taskSerivce.GetTaskById(id);
+                Task task = _taskService.GetTaskById(id);
 
                 if (task == null)
                 {
@@ -111,13 +111,24 @@ namespace TaskManager.Controllers
                     return StatusCode((int)HttpStatusCode.NotFound, notFoundErrorResponse);
                 }
 
+                Task duplicateTask = _taskService.GetTaskByName(taskWriteRequestPayload.TaskName);
+
+                if (duplicateTask != null)
+                {
+                    if (duplicateTask.Id != id)
+                    {
+                        ErrorResponse notFoundErrorResponse = ErrorResponse.NewErrorResponse(ErrorNumbers.ALREADY_EXISTS, ErrorMessages.ALREADY_EXISTS, "TaskName", taskWriteRequestPayload.TaskName);
+                        return StatusCode((int)HttpStatusCode.Conflict, notFoundErrorResponse);
+                    }
+                }
+              
                 if (!DateTime.TryParse(taskWriteRequestPayload.DueDate, out DateTime expectedDate))
                 {
                     ErrorResponse badRequestErrorResponse = ErrorResponse.NewErrorResponse(ErrorNumbers.NOT_VALID, ErrorMessages.NOT_VALID, "DueDate", taskWriteRequestPayload.DueDate);
                     return StatusCode((int)HttpStatusCode.BadRequest, badRequestErrorResponse);
                 }
 
-                _taskSerivce.UpdateTask(taskWriteRequestPayload.TaskName, taskWriteRequestPayload.DueDate, (bool)taskWriteRequestPayload.IsCompleted, task);
+                _taskService.UpdateTask(taskWriteRequestPayload.TaskName, taskWriteRequestPayload.DueDate, (bool)taskWriteRequestPayload.IsCompleted, task);
             }
             catch (Exception e)
             {
@@ -142,7 +153,7 @@ namespace TaskManager.Controllers
         {
             try
             {
-                Task task = _taskSerivce.GetTaskById(id);
+                Task task = _taskService.GetTaskById(id);
 
                 if (task == null)
                 {
@@ -150,7 +161,7 @@ namespace TaskManager.Controllers
                     return StatusCode((int)HttpStatusCode.NotFound, notFoundErrorResponse);
                 }
 
-                _taskSerivce.DeleteTask(task);
+                _taskService.DeleteTask(task);
             } catch (Exception e)
             {
                 return StatusCode((int)HttpStatusCode.InternalServerError);
@@ -161,7 +172,7 @@ namespace TaskManager.Controllers
 
         private bool CanAddMoreTasks()
         {
-            long taskCount = _taskSerivce.GetTotalTaskCount();
+            long taskCount = _taskService.GetTotalTaskCount();
 
             if (_taskLimits.MaxTaskEntries > taskCount)
             {
