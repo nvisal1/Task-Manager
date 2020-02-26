@@ -11,12 +11,16 @@ using TaskManager.Models;
 
 namespace TaskManager.Controllers
 {
+    /// <summary>
+    /// This class contains all endpoints related to task reads. 
+    /// </summary>
     [ApiController]
     [Route("tasks")]
     public class TaskReadController : ControllerBase
     {
         private readonly ITaskService _taskSerivce;
 
+        // Constants for all possible `get all tasks` parameter values
         private const string PARAMETER_EMPTY_STRING  = "";
         private const string PARAMETER_ASC           = "Asc";
         private const string PARAMETER_DESC          = "Desc";
@@ -29,6 +33,13 @@ namespace TaskManager.Controllers
             _taskSerivce = taskService;
         }
 
+        /// <summary>
+        /// This endpoint allows a requester to get a single task.
+        /// The function will return errors in the following scenarios
+        /// - the task does not exist
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpGet("{id}")]
         [Produces("application/json")]
         [ProducesResponseType(typeof(TaskResponse), StatusCodes.Status200OK)]
@@ -40,6 +51,7 @@ namespace TaskManager.Controllers
             {
                 Task task = _taskSerivce.GetTaskById(id);
 
+                // If the task does not exist, return an error to the client
                 if (task == null)
                 {
                     ErrorResponse errorResponse = ErrorResponse.NewErrorResponse(ErrorNumbers.NOT_FOUND, ErrorMessages.NOT_FOUND, "Id", id.ToString());
@@ -51,10 +63,19 @@ namespace TaskManager.Controllers
             }
             catch (Exception e)
             {
+                Console.WriteLine(e);
                 return StatusCode((int)HttpStatusCode.InternalServerError);
             }
         }
 
+        /// <summary>
+        /// This endpoint allows a requester to get all tasks.
+        /// The function will return errors in the following scenarios
+        /// - the optional parameters are invalid
+        /// </summary>
+        /// <param name="orderByDate"></param>
+        /// <param name="taskStatus"></param>
+        /// <returns></returns>
         [HttpGet]
         [Produces("application/json")]
         [ProducesResponseType(typeof(TaskResponse[]), StatusCodes.Status200OK)]
@@ -64,6 +85,7 @@ namespace TaskManager.Controllers
         {
             try
             {
+                // If either of the optional parameters are invalid, return an error to the client
                 var errorResponse = ValidateGetAllTaskParameters(orderByDate, taskStatus);
                 if (errorResponse != null)
                 {
@@ -72,6 +94,7 @@ namespace TaskManager.Controllers
 
                 List<Task>tasks = _taskSerivce.GetAllTasks(taskStatus, orderByDate);
 
+                // convert each task into a task response
                 List<TaskResponse> taskResponses = new List<TaskResponse>();
                 foreach (Task task in tasks)
                 {
@@ -84,10 +107,19 @@ namespace TaskManager.Controllers
             }
             catch (Exception e)
             {
+                Console.WriteLine(e);
                 return StatusCode((int)HttpStatusCode.InternalServerError);
             }
         }
 
+        /// <summary>
+        /// check if orderByDate or taskStatus contains an invalid value
+        /// 
+        /// return an error response if an invalid value exists
+        /// </summary>
+        /// <param name="orderByDate"></param>
+        /// <param name="taskStatus"></param>
+        /// <returns></returns>
         private ErrorResponse ValidateGetAllTaskParameters(string orderByDate, string taskStatus)
         {
             if (!(orderByDate.Equals(PARAMETER_EMPTY_STRING) || orderByDate.Equals(PARAMETER_ASC) || orderByDate.Equals(PARAMETER_DESC)))
