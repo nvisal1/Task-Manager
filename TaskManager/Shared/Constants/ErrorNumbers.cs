@@ -1,5 +1,8 @@
 ﻿namespace TaskManager.Constants
 {
+    /// <summary>
+    /// Constant values for all possible error numbers
+    /// </summary>
     public static class ErrorNumbers
     {
         public const int ALREADY_EXISTS = 1;

@@ -35,8 +35,6 @@ namespace TaskManager.Controllers
 
         /// <summary>
         /// This endpoint allows a requester to get a single task.
-        /// The function will return errors in the following scenarios
-        /// - the task does not exist
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
@@ -70,8 +68,6 @@ namespace TaskManager.Controllers
 
         /// <summary>
         /// This endpoint allows a requester to get all tasks.
-        /// The function will return errors in the following scenarios
-        /// - the optional parameters are invalid
         /// </summary>
         /// <param name="orderByDate"></param>
         /// <param name="taskStatus"></param>

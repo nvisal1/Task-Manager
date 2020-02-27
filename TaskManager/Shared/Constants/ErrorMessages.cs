@@ -1,5 +1,8 @@
 ﻿namespace TaskManager.Constants
 {
+    /// <summary>
+    /// Constant values for all possible error messages
+    /// </summary>
     public static class ErrorMessages
     {
         public const string ALREADY_EXISTS = "The entity already exists";

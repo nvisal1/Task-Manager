@@ -4,6 +4,13 @@ using TaskManager.Models;
 
 namespace TaskManager.Data
 {
+    /// <summary>
+    /// This class is referenced at API startup.
+    /// 
+    /// It checks to see if the Tasks table is empty.
+    /// If it is empty, it seeds the table with 4
+    /// tasks.
+    /// </summary>
     public class DBInitializer
     {
         public static void Initialize(AppDbContext appDbContext)

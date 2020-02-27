@@ -1,5 +1,5 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
+using TaskManager.Constants;
 
 namespace TaskManager.DataTransferObjects
 {
@@ -35,16 +35,28 @@ namespace TaskManager.DataTransferObjects
         [MaxLength(1024)]
         public string ErrorDescription { get; set; }
 
+        /// <summary>
+        /// This function is used to determine the error response number
+        /// when given a model state error
+        /// </summary>
+        /// <param name="encodedErrorDescription"></param>
+        /// <returns></returns>
         public static int GetErrorNumberFromDescription(string encodedErrorDescription)
         {
-            if (encodedErrorDescription.Contains("field is required")) return 3;
-            else if (encodedErrorDescription.Contains("maximum length")) return 2;
-            else if (encodedErrorDescription.Contains("JSON value could not be converted")) return 7;
-            else if (encodedErrorDescription.Contains("minimum length")) return 6;
+            if (encodedErrorDescription.Contains("field is required")) return ErrorNumbers.IS_REQUIRED;
+            else if (encodedErrorDescription.Contains("maximum length")) return ErrorNumbers.TOO_LARGE;
+            else if (encodedErrorDescription.Contains("JSON value could not be converted")) return ErrorNumbers.NOT_VALID;
+            else if (encodedErrorDescription.Contains("minimum length")) return ErrorNumbers.TOO_SMALL;
 
             return 0;
         }
 
+        /// <summary>
+        /// This function is used to determine the error response message
+        /// when given a model state error
+        /// </summary>
+        /// <param name="encodedErrorDescription"></param>
+        /// <returns></returns>
         public static (string decodedErrorMessage, int decodedErrorNumber) GetErrorMessage(string encodedErrorDescription)
         {
             int errorNumber = GetErrorNumberFromDescription(encodedErrorDescription);
@@ -53,31 +65,31 @@ namespace TaskManager.DataTransferObjects
             {
                 case 1:
                     {
-                        return ("The entity already exists", errorNumber);
+                        return (ErrorMessages.ALREADY_EXISTS, errorNumber);
                     }
                 case 2:
                     {
-                        return ("The parameter value is too large", errorNumber);
+                        return (ErrorMessages.TOO_LARGE, errorNumber);
                     }
                 case 3:
                     {
-                        return ("The parameter is required", errorNumber);
+                        return (ErrorMessages.IS_REQUIRED, errorNumber);
                     }
                 case 4:
                     {
-                        return ("The maximum number of entities have been created. No further entities can be created at this time.", errorNumber);
+                        return (ErrorMessages.AT_CAPACITY, errorNumber);
                     }
                 case 5:
                     {
-                        return ("The entity could not be found", errorNumber);
+                        return (ErrorMessages.NOT_FOUND, errorNumber);
                     }
                 case 6:
                     {
-                        return ("The parameter value is too small", errorNumber);
+                        return (ErrorMessages.TOO_SMALL, errorNumber);
                     }
                 case 7:
                     {
-                        return ("The parameter value is not valid", errorNumber);
+                        return (ErrorMessages.NOT_VALID, errorNumber);
                     }
                 default:
                     {
@@ -86,11 +98,15 @@ namespace TaskManager.DataTransferObjects
             }
         }
 
-        internal static ErrorResponse NewErrorResponse(object aT_)
-        {
-            throw new NotImplementedException();
-        }
-
+        /// <summary>
+        /// This function is meant to provide 
+        /// an easy way for the controllers to create error responses
+        /// </summary>
+        /// <param name="errorNumber"></param>
+        /// <param name="errorDescription"></param>
+        /// <param name="parameterName"></param>
+        /// <param name="parameterValue"></param>
+        /// <returns></returns>
         public static ErrorResponse NewErrorResponse(int errorNumber, string errorDescription, string parameterName, string parameterValue)
         {
             return new ErrorResponse()

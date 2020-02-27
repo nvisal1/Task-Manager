@@ -30,10 +30,6 @@ namespace TaskManager.Controllers
 
         /// <summary>
         /// This endpoint allows a requester to save a new task.
-        /// The function will return errors in the following scenarios
-        /// - invalid request body
-        /// - the task already exists
-        /// - task capacity has been reached
         /// </summary>
         /// <param name="taskWriteRequestPayload"></param>
         /// <returns></returns>
@@ -110,10 +106,6 @@ namespace TaskManager.Controllers
 
         /// <summary>
         /// This endpoint allows a requester to update a task.
-        /// The function will return errors in the following scenarios
-        /// - invalid request body
-        /// - the task does not exists
-        /// - a task with the given name already exists under a different id
         /// </summary>
         /// <param name="id"></param>
         /// <param name="taskWriteRequestPayload"></param>
@@ -191,8 +183,6 @@ namespace TaskManager.Controllers
 
         /// <summary>
         /// This endpoint allows a requester to delete a task.
-        /// The function will return errors in the following scenarios
-        /// - the task does not exist
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>

@@ -3,6 +3,9 @@ using TaskManager.Models;
 
 namespace TaskManager.Interfaces
 {
+    /// <summary>
+    /// Iterface that is used for DI in the API Controllers
+    /// </summary>
     public interface ITaskService
     {
         public void CreateTask(Task task);
