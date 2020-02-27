@@ -4,10 +4,23 @@ using RestSDKLibrary.Models;
 
 namespace RestFunctionalTests
 {
+    /// <summary>
+    /// This class contains tests for getting a single task
+    /// </summary>
     [TestClass]
     public class GetTaskTests
     {
-
+        /// <summary>
+        /// Attempts to make a valid request to read a task
+        /// 
+        /// This test inserts a task and then makes a second
+        /// request to read that task
+        /// 
+        /// This test expects the API to return a success response
+        /// with the correct information on the second request
+        /// 
+        /// The task is deleted after it is created
+        /// </summary>
         [TestMethod]
         public void VerifySuccessfulTaskReadById()
         {
@@ -30,6 +43,12 @@ namespace RestFunctionalTests
             Assert.IsTrue(readResponse.DueDate.Equals(createResponse.DueDate));
         }
 
+        /// <summary>
+        /// Attempts to read a task that does not exist
+        /// 
+        /// This test expects the API to return an error response with
+        /// the correct information
+        /// </summary>
         [TestMethod]
         public void VerifyNotFoundTaskReadById()
         {

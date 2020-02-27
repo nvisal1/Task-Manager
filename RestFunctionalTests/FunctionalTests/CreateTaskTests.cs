@@ -233,7 +233,7 @@ namespace RestFunctionalTests
             };
 
             // If the test payload is not formatted correctly, fail the test before making a request to the API
-            if (payload.DueDate.Length <= 10)
+            if (payload.DueDate.Length < 10)
             {
                 Assert.Fail("This test requires the payload to have a DueDate longer than 10 characters");
             }

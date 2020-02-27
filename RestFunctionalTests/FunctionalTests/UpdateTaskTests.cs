@@ -4,9 +4,23 @@ using RestSDKLibrary.Models;
 
 namespace RestFunctionalTests
 {
+    /// <summary>
+    /// This class contains test for updating a task
+    /// </summary>
     [TestClass]
     public class UpdateTaskTests
     {
+        /// <summary>
+        /// Attempts to make a valid request to update a task
+        /// 
+        /// This test creates a new task and then makes a second request
+        /// to update it
+        /// 
+        /// This test excpects the API to return a success response 
+        /// (which is null in this case) on the second request
+        /// 
+        /// The task is deleted after creation
+        /// </summary>
         [TestMethod]
         public void VerifySuccessfulTaskUpdate()
         {
@@ -33,6 +47,17 @@ namespace RestFunctionalTests
             Assert.IsNull(updateResponse);
         }
 
+        /// <summary>
+        /// Attempts to update a task with a task name that is too long
+        /// 
+        /// This test creates a valid task and then makes a second request
+        /// to update the task with task name that is too long
+        /// 
+        /// This test expects the API to return an error response
+        /// with the correct information on the second request
+        /// 
+        /// The task is deleted after it is created
+        /// </summary>
         [TestMethod]
         public void VerifyLongTaskNameTaskUpdate()
         {
@@ -62,6 +87,17 @@ namespace RestFunctionalTests
             Assert.IsTrue(updateResponse.ParameterValue.Equals(updatePayload.TaskName));
         }
 
+        /// <summary>
+        /// Attempts to update a task with an empty task name
+        /// 
+        /// This test creates a valid task and then makes a second request
+        /// to update the task with an empty task name
+        /// 
+        /// This test expects the API to return an error response
+        /// with the correct information on the second request
+        /// 
+        /// The task is deleted after it is created
+        /// </summary>
         [TestMethod]
         public void VerifyEmptyTaskNameTaskUpdate()
         {
@@ -91,6 +127,17 @@ namespace RestFunctionalTests
             Assert.IsTrue(updateResponse.ParameterValue.Equals(updatePayload.TaskName));
         }
 
+        /// <summary>
+        /// Attempts to update a task with a null task name
+        /// 
+        /// This test creates a valid task and then makes a second request
+        /// to update the task with a null task name
+        /// 
+        /// This test expects the API to return an error response
+        /// with the correct information on the second request
+        /// 
+        /// The task is deleted after it is created
+        /// </summary>
         [TestMethod]
         public void VerifyNullTaskNameTaskUpdate()
         {
@@ -119,6 +166,17 @@ namespace RestFunctionalTests
             Assert.IsTrue(updateResponse.ParameterValue == null);
         }
 
+        /// <summary>
+        /// Attempts to update a task with a null IsCompleted property
+        /// 
+        /// This test creates a valid task and then makes a second request
+        /// to update the task with IsCompleted: null
+        /// 
+        /// This test expects the API to return an error response
+        /// with the correct information on the second request
+        /// 
+        /// The task is deleted after it is created
+        /// </summary>
         [TestMethod]
         public void VerifyNullIsCompletedTaskUpdate()
         {
@@ -147,6 +205,17 @@ namespace RestFunctionalTests
             Assert.IsTrue(updateResponse.ParameterValue == null);
         }
 
+        /// <summary>
+        /// Attempts to update a task with an empty due date
+        /// 
+        /// This test creates a valid task and then makes a second request
+        /// to update the task with an empty due date
+        /// 
+        /// This test expects the API to return an error response
+        /// with the correct information on the second request
+        /// 
+        /// The task is deleted after it is created
+        /// </summary>
         [TestMethod]
         public void VerifyEmptyDueDateTaskUpdate()
         {
@@ -176,6 +245,17 @@ namespace RestFunctionalTests
             Assert.IsTrue(updateResponse.ParameterValue.Equals(updatePayload.DueDate));
         }
 
+        /// <summary>
+        /// Attempts to update a task with a null due date
+        /// 
+        /// This test creates a valid task and then makes a second request
+        /// to update the task with a null due date
+        /// 
+        /// This test expects the API to return an error response
+        /// with the correct information on the second request
+        /// 
+        /// The task is deleted after it is created
+        /// </summary>
         [TestMethod]
         public void VerifyNullDueDateTaskUpdate()
         {
@@ -204,6 +284,17 @@ namespace RestFunctionalTests
             Assert.IsTrue(updateResponse.ParameterValue == null);
         }
 
+        /// <summary>
+        /// Attempts to update a task with an invalid due date
+        /// 
+        /// This test creates a valid task and then makes a second request
+        /// to update the task with an invalid due date
+        /// 
+        /// This test expects the API to return an error response
+        /// with the correct information on the second request
+        /// 
+        /// The task is deleted after it is created
+        /// </summary>
         [TestMethod]
         public void VerifyIncorrectFormatDueDateTaskUpdate()
         {
@@ -233,6 +324,17 @@ namespace RestFunctionalTests
             Assert.IsTrue(updateResponse.ParameterValue.Equals(updatePayload.DueDate));
         }
 
+        /// <summary>
+        /// Attempts to update a task with a short due date
+        /// 
+        /// This test creates a valid task and then makes a second request
+        /// to update the task with a short due date
+        /// 
+        /// This test expects the API to return an error response
+        /// with the correct information on the second request
+        /// 
+        /// The task is deleted after it is created
+        /// </summary>
         [TestMethod]
         public void VerifyShortDueDateTaskUpdate()
         {
@@ -262,6 +364,12 @@ namespace RestFunctionalTests
             Assert.IsTrue(updateResponse.ParameterValue.Equals(updatePayload.DueDate));
         }
 
+        /// <summary>
+        /// Attempts to update a task that does not exist
+        /// 
+        /// This test expects the API to return an error response
+        /// with the correct information
+        /// </summary>
         [TestMethod]
         public void VerifyNotFoundTaskUpdate()
         {
@@ -280,6 +388,19 @@ namespace RestFunctionalTests
             Assert.IsTrue(updateResponse.ParameterValue.Equals(updatePayload.TaskName));
         }
 
+        /// <summary>
+        /// Attempts to update a task with a name that is used by
+        /// another saved task
+        /// 
+        /// This test creates two tasks and then makes a third request
+        /// to update the first task's name to match the name of the
+        /// second task
+        /// 
+        /// This test expects the API to return an error response with the
+        /// correct information on the third request
+        /// 
+        /// Both tasks are deleted after creation
+        /// </summary>
         [TestMethod]
         public void VerifyAlreadyExistsTaskUpdate()
         {
@@ -311,6 +432,7 @@ namespace RestFunctionalTests
             ErrorResponse updateResponse = Constants.ClientConnectionConfig.client.UpdateTask((int)creationResponse.Id, updatePayload);
 
             Constants.ClientConnectionConfig.client.DeleteTask((int)creationResponse.Id);
+            Constants.ClientConnectionConfig.client.DeleteTask((int)creationResponse2.Id);
 
             Assert.AreEqual(updateResponse.ErrorNumber, 1);
             Assert.IsTrue(updateResponse.ErrorDescription.Equals("The entity already exists"));

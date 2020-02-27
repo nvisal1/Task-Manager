@@ -7,7 +7,7 @@ using System.Collections.Generic;
 namespace RestFunctionalTests
 {
     /// <summary>
-    /// This class contains tests to getting all tasks
+    /// This class contains tests for getting all tasks
     /// </summary>
     [TestClass]
     public class GetAllTasksTests
