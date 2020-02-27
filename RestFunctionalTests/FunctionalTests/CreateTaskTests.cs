@@ -5,9 +5,20 @@ using System;
 
 namespace RestFunctionalTests
 {
+    /// <summary>
+    /// This class contains tests for task creation
+    /// </summary>
     [TestClass]
     public class CreateTaskTests
     {
+        /// <summary>
+        /// Attemps to create a valid Task
+        /// 
+        /// This test expects the API to return a success response
+        /// with the correct information
+        /// 
+        /// The task is deleted after it is created
+        /// </summary>
         [TestMethod]
         public void VerifySucessfulTaskCreation()
         {
@@ -28,6 +39,12 @@ namespace RestFunctionalTests
             Assert.IsTrue(response.DueDate.Equals(payload.DueDate));
         }
 
+        /// <summary>
+        /// Attempts to create a task that has a task name longer than 100 characters
+        /// 
+        /// This test expects the API to return an error response
+        /// with the correct information
+        /// </summary>
         [TestMethod]
         public void VerifyLongTaskNameTaskCreation()
         {
@@ -38,6 +55,7 @@ namespace RestFunctionalTests
                 DueDate = "2012-04-23",
             };
 
+            // If the test payload is not formatted correctly, fail the test before making a request to the API
             if (payload.TaskName.Length < 100)
             {
                 Assert.Fail("This test requires the payload to have a TaskName of length 100 or greater");
@@ -51,6 +69,12 @@ namespace RestFunctionalTests
             Assert.IsTrue(response.ParameterValue.Equals(payload.TaskName));
         }
 
+        /// <summary>
+        /// Attemps to create a task with an empty task name
+        /// 
+        /// This test expects the API to return an error response
+        /// with the correct information
+        /// </summary>
         [TestMethod]
         public void VerifyEmptyTaskNameTaskCreation()
         {
@@ -61,6 +85,7 @@ namespace RestFunctionalTests
                 DueDate = "2012-04-23",
             };
 
+            // If the test payload is not formatted correctly, fail the test before making a request to the API
             if (payload.TaskName.Length > 0)
             {
                 Assert.Fail("This test requires the payload to have an empty TaskName");
@@ -74,8 +99,12 @@ namespace RestFunctionalTests
             Assert.IsTrue(response.ParameterValue.Equals(payload.TaskName));
         }
 
-
-
+        /// <summary>
+        /// Attempts to create a task with a null task name
+        /// 
+        /// This test expects the API to return an error response
+        /// with the correct information
+        /// </summary>
         [TestMethod]
         public void VerifyNullTaskNameTaskCreation()
         {
@@ -85,6 +114,7 @@ namespace RestFunctionalTests
                 DueDate = "2012-04-23",
             };
 
+            // If the test payload is not formatted correctly, fail the test before making a request to the API
             if (!String.IsNullOrEmpty(payload.TaskName))
             {
                 Assert.Fail("This test requires the payload to have a null TaskName");
@@ -98,6 +128,12 @@ namespace RestFunctionalTests
             Assert.IsTrue(response.ParameterValue == null);
         }
 
+        /// <summary>
+        /// Attempts to create a task with a null IsCompleted property
+        /// 
+        /// This test expects the API to return an error response
+        /// with the correct ionformation
+        /// </summary>
         [TestMethod]
         public void VerifyNullIsCompletedTaskCreation()
         {
@@ -107,6 +143,7 @@ namespace RestFunctionalTests
                 DueDate = "2012-04-23",
             };
 
+            // If the test payload is not formatted correctly, fail the test before making a request to the API
             if (payload.IsCompleted != null)
             {
                 Assert.Fail("This test requires the payload to have a null IsCompleted");
@@ -120,6 +157,12 @@ namespace RestFunctionalTests
             Assert.IsTrue(response.ParameterValue == null);
         }
 
+        /// <summary>
+        /// Attempts to create a task with an empty due date
+        /// 
+        /// This test expects the API to return an error response
+        /// with the correct information
+        /// </summary>
         [TestMethod]
         public void VerifyEmptyDueDateTaskCreation()
         {
@@ -130,6 +173,7 @@ namespace RestFunctionalTests
                 DueDate = ""
             };
 
+            // If the test payload is not formatted correctly, fail the test before making a request to the API
             if (payload.DueDate.Length > 0)
             {
                 Assert.Fail("This test requires the payload to have an empty DueDate");
@@ -143,6 +187,12 @@ namespace RestFunctionalTests
             Assert.IsTrue(response.ParameterValue.Equals(payload.DueDate));
         }
 
+        /// <summary>
+        /// Attempts to create a task with a null due date
+        /// 
+        /// This test expects the API to return an error response
+        /// with the correct information
+        /// </summary>
         [TestMethod]
         public void VerifyNullDueDateTaskCreation()
         {
@@ -152,6 +202,7 @@ namespace RestFunctionalTests
                 IsCompleted = false,
             };
 
+            // If the test payload is not formatted correctly, fail the test before making a request to the API
             if (!String.IsNullOrEmpty(payload.DueDate))
             {
                 Assert.Fail("This test requires the payload to have a null DueDate");
@@ -165,6 +216,12 @@ namespace RestFunctionalTests
             Assert.IsTrue(response.ParameterValue == null);
         }
 
+        /// <summary>
+        /// Attempts to create a task with a due date that is too long
+        /// 
+        /// This test expects the API to return an error response
+        /// with the correct information
+        /// </summary>
         [TestMethod]
         public void VerifyIncorrectFormatDueDateTaskCreation()
         {
@@ -175,6 +232,12 @@ namespace RestFunctionalTests
                 DueDate = "stringgggg"
             };
 
+            // If the test payload is not formatted correctly, fail the test before making a request to the API
+            if (payload.DueDate.Length <= 10)
+            {
+                Assert.Fail("This test requires the payload to have a DueDate longer than 10 characters");
+            }
+
             ErrorResponse response = (ErrorResponse)Constants.ClientConnectionConfig.client.CreateTask(body: payload);
 
             Assert.AreEqual(response.ErrorNumber, 7);
@@ -183,6 +246,12 @@ namespace RestFunctionalTests
             Assert.IsTrue(response.ParameterValue.Equals(payload.DueDate));
         }
 
+        /// <summary>
+        /// Attempts to create a task with a due date that is too short
+        /// 
+        /// This test expects the API to return an error response
+        /// with the correct information
+        /// </summary>
         [TestMethod]
         public void VerifyShortDueDateTaskCreation()
         {
@@ -193,6 +262,12 @@ namespace RestFunctionalTests
                 DueDate = "2012-04"
             };
 
+            // If the test payload is not formatted correctly, fail the test before making a request to the API
+            if (payload.DueDate.Length >= 10)
+            {
+                Assert.Fail("This test requires the payload to have a DueDate shorter than 10 characters");
+            }
+
             ErrorResponse response = (ErrorResponse)Constants.ClientConnectionConfig.client.CreateTask(body: payload);
 
             Assert.AreEqual(response.ErrorNumber, 6);
@@ -201,6 +276,17 @@ namespace RestFunctionalTests
             Assert.IsTrue(response.ParameterValue.Equals(payload.DueDate));
         }
 
+        /// <summary>
+        /// Attempts to create a task that already exists
+        /// 
+        /// This test attempts to insert a task
+        /// and then makes the same request again
+        /// 
+        /// This test expects the API to return an error response
+        /// with the correct infromation on the second request 
+        /// 
+        /// The task is deleted after it is created
+        /// </summary>
         [TestMethod]
         public void VerifyDuplicateTaskCreation()
         {

@@ -6,9 +6,18 @@ using System.Collections.Generic;
 
 namespace RestFunctionalTests
 {
+    /// <summary>
+    /// This class contains tests to getting all tasks
+    /// </summary>
     [TestClass]
     public class GetAllTasksTests
     {
+        /// <summary>
+        /// Attempts to get all tasks without any optional parameters
+        /// 
+        /// This test expects the API to return 4 tasks (from initial seed, will not work in production)
+        /// The tasks are required to be in Asc order by default
+        /// </summary>
         [TestMethod]
         public void VerifySuccessfulReadAllTasks()
         {
@@ -20,6 +29,12 @@ namespace RestFunctionalTests
             Assert.IsTrue(DateTime.Compare(Convert.ToDateTime(response[2].DueDate), Convert.ToDateTime(response[3].DueDate)) < 0);
         }
 
+        /// <summary>
+        /// Attempts to get all tasks with optional parameter orderByDate = Asc
+        /// 
+        /// This test expects the API to return 4 tasks (from initial seed, will not work in production)
+        /// The tasks are required to be in Asc order
+        /// </summary>
         [TestMethod]
         public void VerifySuccessfulAscReadAllTasks()
         {
@@ -31,6 +46,12 @@ namespace RestFunctionalTests
             Assert.IsTrue(DateTime.Compare(Convert.ToDateTime(response[2].DueDate), Convert.ToDateTime(response[3].DueDate)) < 0);
         }
 
+        /// <summary>
+        /// Attempts to get all tasks with optional parameter orderByDate = Desc
+        /// 
+        /// This test expects the API to return 4 tasks (from initial seed, will not work in production)
+        /// The tasks are required to be in Desc order
+        /// </summary>
         [TestMethod]
         public void VerifySuccessfulDescReadAllTasks()
         {
@@ -42,6 +63,19 @@ namespace RestFunctionalTests
             Assert.IsTrue(DateTime.Compare(Convert.ToDateTime(response[2].DueDate), Convert.ToDateTime(response[3].DueDate)) > 0);
         }
 
+        /// <summary>
+        /// Attempts to get all tasks with optional parameter taskStatus = Completed
+        /// 
+        /// This test expects the API to return 2 tasks (from initial seed, will not work in production)
+        /// The tasks are required to be in Asc order
+        /// 
+        /// The initial seed only contains one completed task
+        /// 
+        /// This test inserts a second completed task before making the request to get all tasks.
+        /// This is done in order to verify task ordering
+        /// 
+        /// The task is deleted after it is created
+        /// </summary>
         [TestMethod]
         public void VerifySuccessfulCompletedReadAllTasks()
         {
@@ -62,12 +96,19 @@ namespace RestFunctionalTests
             Assert.AreEqual(getAllResponse.Count, 2);
             Assert.IsTrue(DateTime.Compare(Convert.ToDateTime(getAllResponse[0].DueDate), Convert.ToDateTime(getAllResponse[1].DueDate)) < 0);
 
+            // Verify that every task in the response is completed
             foreach (TaskResponse taskResponse in getAllResponse)
             {
                 Assert.IsTrue((bool)taskResponse.IsCompleted);
             }
         }
 
+        /// <summary>
+        /// Attempts to get all tasks with optional parameter taskStatus = NotCompleted
+        /// 
+        /// This test expects the API to return 3 tasks (from initial seed, will not work in production)
+        /// The tasks are required to be in Asc order
+        /// </summary>
         [TestMethod]
         public void VerifySuccessfulNotCompletedReadAllTasks()
         {
@@ -77,12 +118,19 @@ namespace RestFunctionalTests
             Assert.IsTrue(DateTime.Compare(Convert.ToDateTime(getAllResponse[0].DueDate), Convert.ToDateTime(getAllResponse[1].DueDate)) < 0);
             Assert.IsTrue(DateTime.Compare(Convert.ToDateTime(getAllResponse[1].DueDate), Convert.ToDateTime(getAllResponse[2].DueDate)) < 0);
 
+            // Verify that every task in the response is not completed
             foreach (TaskResponse taskResponse in getAllResponse)
             {
                 Assert.IsFalse((bool)taskResponse.IsCompleted);
             }
         }
 
+        /// <summary>
+        /// Attempts to get all tasks with optional parameter taskStatus = All
+        /// 
+        /// This test expects the API to return 4 tasks (from initial seed, will not work in production)
+        /// The tasks are required to be in Asc order
+        /// </summary>
         [TestMethod]
         public void VerifySuccessfulAllReadAllTasks()
         {
@@ -94,6 +142,19 @@ namespace RestFunctionalTests
             Assert.IsTrue(DateTime.Compare(Convert.ToDateTime(getAllResponse[2].DueDate), Convert.ToDateTime(getAllResponse[3].DueDate)) < 0);
         }
 
+        /// <summary>
+        /// Attempts to get all tasks with optional parameter taskStatus = Completed && orderByDate = Asc
+        /// 
+        /// This test expects the API to return 2 tasks (from initial seed, will not work in production)
+        /// The tasks are required to be in Asc order
+        /// 
+        /// The initial seed only contains one completed task
+        /// 
+        /// This test inserts a second completed task before making the request to get all tasks.
+        /// This is done in order to verify task ordering
+        /// 
+        /// The task is deleted after it is created
+        /// </summary>
         [TestMethod]
         public void VerifySuccessfulAscCompletedReadAllTasks()
         {
@@ -114,12 +175,26 @@ namespace RestFunctionalTests
             Assert.AreEqual(getAllResponse.Count, 2);
             Assert.IsTrue(DateTime.Compare(Convert.ToDateTime(getAllResponse[0].DueDate), Convert.ToDateTime(getAllResponse[1].DueDate)) < 0);
 
+            // Verify that every task in the response is completed
             foreach (TaskResponse taskResponse in getAllResponse)
             {
                 Assert.IsTrue((bool)taskResponse.IsCompleted);
             }
         }
 
+        /// <summary>
+        /// Attempts to get all tasks with optional parameter taskStatus = Completed && orderByDate = Desc
+        /// 
+        /// This test expects the API to return 2 tasks (from initial seed, will not work in production)
+        /// The tasks are required to be in Desc order
+        /// 
+        /// The initial seed only contains one completed task
+        /// 
+        /// This test inserts a second completed task before making the request to get all tasks.
+        /// This is done in order to verify task ordering
+        /// 
+        /// The task is deleted after it is created
+        /// </summary>
         [TestMethod]
         public void VerifySuccessfulDescCompletedReadAllTasks()
         {
@@ -140,12 +215,19 @@ namespace RestFunctionalTests
             Assert.AreEqual(getAllResponse.Count, 2);
             Assert.IsTrue(DateTime.Compare(Convert.ToDateTime(getAllResponse[0].DueDate), Convert.ToDateTime(getAllResponse[1].DueDate)) > 0);
 
+            // Verify that every task in the response is completed
             foreach (TaskResponse taskResponse in getAllResponse)
             {
                 Assert.IsTrue((bool)taskResponse.IsCompleted);
             }
         }
 
+        /// <summary>
+        /// Attempts to get all tasks with optional parameter taskStatus = NotCompleted && orderByDate = Asc
+        /// 
+        /// This test expects the API to return 3 tasks (from initial seed, will not work in production)
+        /// The tasks are required to be in Asc order
+        /// </summary>
         [TestMethod]
         public void VerifySuccessfulAscNotCompletedReadAllTasks()
         {
@@ -155,12 +237,19 @@ namespace RestFunctionalTests
             Assert.IsTrue(DateTime.Compare(Convert.ToDateTime(getAllResponse[0].DueDate), Convert.ToDateTime(getAllResponse[1].DueDate)) < 0);
             Assert.IsTrue(DateTime.Compare(Convert.ToDateTime(getAllResponse[1].DueDate), Convert.ToDateTime(getAllResponse[2].DueDate)) < 0);
 
+            // Verify that every task in the response is not completed
             foreach (TaskResponse taskResponse in getAllResponse)
             {
                 Assert.IsFalse((bool)taskResponse.IsCompleted);
             }
         }
 
+        /// <summary>
+        /// Attempts to get all tasks with optional parameter taskStatus = NotCompleted && orderByDate = Desc
+        /// 
+        /// This test expects the API to return 3 tasks (from initial seed, will not work in production)
+        /// The tasks are required to be in Desc order
+        /// </summary>
         [TestMethod]
         public void VerifySuccessfulDescNotCompletedReadAllTasks()
         {
@@ -170,12 +259,19 @@ namespace RestFunctionalTests
             Assert.IsTrue(DateTime.Compare(Convert.ToDateTime(getAllResponse[0].DueDate), Convert.ToDateTime(getAllResponse[1].DueDate)) > 0);
             Assert.IsTrue(DateTime.Compare(Convert.ToDateTime(getAllResponse[1].DueDate), Convert.ToDateTime(getAllResponse[2].DueDate)) > 0);
 
+            // Verify that every task in the response is not completed
             foreach (TaskResponse taskResponse in getAllResponse)
             {
                 Assert.IsFalse((bool)taskResponse.IsCompleted);
             }
         }
 
+        /// <summary>
+        /// Attempts to get all tasks with optional parameter taskStatus = All && orderByDate = Asc
+        /// 
+        /// This test expects the API to return 4 tasks (from initial seed, will not work in production)
+        /// The tasks are required to be in Asc order
+        /// </summary>
         [TestMethod]
         public void VerifySuccessfulAscAllReadAllTasks()
         {
@@ -187,6 +283,12 @@ namespace RestFunctionalTests
             Assert.IsTrue(DateTime.Compare(Convert.ToDateTime(getAllResponse[2].DueDate), Convert.ToDateTime(getAllResponse[3].DueDate)) < 0);
         }
 
+        /// <summary>
+        /// Attempts to get all tasks with optional parameter taskStatus = All && orderByDate = Desc
+        /// 
+        /// This test expects the API to return 4 tasks (from initial seed, will not work in production)
+        /// The tasks are required to be in Desc order
+        /// </summary>
         [TestMethod]
         public void VerifySuccessfulDescAllReadAllTasks()
         {
@@ -198,6 +300,11 @@ namespace RestFunctionalTests
             Assert.IsTrue(DateTime.Compare(Convert.ToDateTime(getAllResponse[2].DueDate), Convert.ToDateTime(getAllResponse[3].DueDate)) > 0);
         }
 
+        /// <summary>
+        /// Attempts to get all tasks with optional parameter taskStatus = All && orderByDate = Invalid
+        /// 
+        /// This test expects the API to return an error response with the correct infomation
+        /// </summary>
         [TestMethod]
         public void VerifyInvalidOrderByDateReadAllTasks()
         {
@@ -209,6 +316,11 @@ namespace RestFunctionalTests
             Assert.IsTrue(getAllResponse.ParameterValue.Equals("Invalid"));
         }
 
+        /// <summary>
+        /// Attempts to get all tasks with optional parameter taskStatus = Invalid && orderByDate = Asc
+        /// 
+        /// This test expects the API to return an error response with the correct infomation
+        /// </summary>
         [TestMethod]
         public void VerifyInvalidTaskStatusReadAllTasks()
         {

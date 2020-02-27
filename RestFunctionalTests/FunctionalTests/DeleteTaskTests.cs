@@ -4,9 +4,20 @@ using RestSDKLibrary.Models;
 
 namespace RestFunctionalTests
 {
+    /// <summary>
+    /// This class contains tests for task deletion
+    /// </summary>
     [TestClass]
     public class DeleteTasksTests
     {
+        /// <summary>
+        /// Attempts to make a valid request to delete a task
+        /// 
+        /// This test creates a task and then makes a second request
+        /// to delete it
+        /// 
+        /// This expects the API to return a success response (which is null in this case)
+        /// </summary>
         [TestMethod]
         public void VerifySuccessfulTaskDeletion()
         {
@@ -24,6 +35,12 @@ namespace RestFunctionalTests
             Assert.IsNull(deleteResponse);
         }
 
+        /// <summary>
+        /// Attemps to delete a task that does not exist
+        /// 
+        /// This test expects the API to return an error response
+        /// with the correct information
+        /// </summary>
         [TestMethod]
         public void VerifyNotFoundTaskDeletion()
         {
